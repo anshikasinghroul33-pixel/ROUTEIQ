@@ -1,0 +1,6 @@
+In login/login.js, keep everything else unchanged.
+Only make the successful Sign In redirect point to the root dashboard:
+
+window.location.href = '../dashboard.html';
+
+If your current code uses a different redirect variable/method, replace only its destination with ../dashboard.html.

@@ -1,0 +1,45 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+    <defs>
+
+        <linearGradient id="routeGradient" x1="8" y1="8" x2="54" y2="57" gradientUnits="userSpaceOnUse">
+
+            <stop stop-color="#F5F8F5"></stop>
+
+            <stop offset="1" stop-color="#76C9AE"></stop>
+
+        </linearGradient>
+
+    </defs>
+
+
+    <!-- LOCATION / ROUTE SHAPE -->
+
+    <path d="M32 6
+           C20.4 6 11 15.2 11 26.5
+           C11 40.2 25.2 50.8 31.1 57
+           C31.6 57.5 32.4 57.5 32.9 57
+           C38.8 50.8 53 40.2 53 26.5
+           C53 15.2 43.6 6 32 6Z" stroke="url(#routeGradient)" stroke-width="5" stroke-linejoin="round"></path>
+
+
+    <!-- INNER ROUTE -->
+
+    <path d="M32 16
+           C25.7 16 20.5 20.6 20.5 26.3
+           C20.5 32.1 25.7 36.7 32 36.7
+           C38.3 36.7 43.5 32.1 43.5 26.3
+           C43.5 20.6 38.3 16 32 16Z" stroke="url(#routeGradient)" stroke-width="4"></path>
+
+
+    <!-- ROUTE LINE -->
+
+    <path d="M32 36.7
+           C37.5 39.7 41.4 43.4 43.5 48" stroke="#76C9AE" stroke-width="4" stroke-linecap="round"></path>
+
+
+    <!-- CENTER -->
+
+    <circle cx="32" cy="26.3" r="4.2" fill="#76C9AE"></circle>
+
+</svg>

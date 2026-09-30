@@ -1,0 +1,3962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RouteIQ — Restaurants</title>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+tailwind.config = {
+    darkMode: "class",
+
+    theme: {
+        extend: {
+            colors: {
+                route: {
+                    50: "#eef8f4",
+                    100: "#d9eee6",
+                    200: "#b6ddcf",
+                    300: "#86c4ae",
+                    400: "#4fa083",
+                    500: "#28765f",
+                    600: "#205f4e",
+                    700: "#194c40",
+                    800: "#153d34",
+                    900: "#102f29"
+                }
+            }
+        }
+    }
+};
+</script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family:
+        "DM Sans",
+        Inter,
+        system-ui,
+        sans-serif;
+
+    margin: 0;
+
+    background: #f6f7f5;
+
+    color: #0f172a;
+
+    transition:
+        background-color .45s ease,
+        color .45s ease;
+}
+
+html.dark body {
+    background: #0b1512;
+    color: #f3f7f5;
+}
+
+
+/* =====================================================
+   THEME TRANSITION
+===================================================== */
+
+.theme-transition {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    pointer-events: none;
+
+    background: #10231e;
+
+    clip-path: circle(
+        0% at var(--theme-x, 95%) var(--theme-y, 5%)
+    );
+
+    transition:
+        clip-path .65s cubic-bezier(.77,0,.18,1);
+}
+
+.theme-transition.active {
+    clip-path: circle(
+        150% at var(--theme-x, 95%) var(--theme-y, 5%)
+    );
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+.sidebar {
+    width: 245px;
+
+    position: fixed;
+
+    left: 0;
+    top: 0;
+
+    height: 100vh;
+
+    background: #13231e;
+
+    color: white;
+
+    z-index: 100;
+
+    border-right:
+        1px solid rgba(255,255,255,.05);
+
+    transition:
+        transform .35s ease;
+}
+
+.logo-area {
+    height: 92px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 0 22px;
+}
+
+.logo-area img {
+    width: 42px;
+
+    height: 42px;
+
+    object-fit: contain;
+}
+
+.logo-text {
+    line-height: 1;
+}
+
+.logo-title {
+    font-size: 18px;
+
+    font-weight: 700;
+
+    letter-spacing: -.03em;
+}
+
+.logo-title span {
+    color: #86c4ae;
+}
+
+.logo-subtitle {
+    margin-top: 5px;
+
+    font-size: 9px;
+
+    color: rgba(255,255,255,.42);
+
+    letter-spacing: .18em;
+
+    text-transform: uppercase;
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+.nav {
+    padding: 10px 12px;
+}
+
+.nav-section {
+    margin:
+        14px 12px 8px;
+
+    font-size: 9px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .18em;
+
+    color: rgba(255,255,255,.30);
+}
+
+.nav-link {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    width: 100%;
+
+    padding:
+        11px 13px;
+
+    margin-bottom: 3px;
+
+    border-radius: 9px;
+
+    color:
+        rgba(255,255,255,.63);
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        transform .25s ease;
+}
+
+.nav-link:hover {
+    background:
+        rgba(255,255,255,.055);
+
+    color: white;
+
+    transform: translateX(2px);
+}
+
+.nav-link.active {
+    background: #286b57;
+
+    color: white;
+
+    box-shadow:
+        inset 0 0 0 1px
+        rgba(255,255,255,.05);
+}
+
+.nav-icon {
+    width: 19px;
+
+    height: 19px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+.nav-divider {
+    height: 1px;
+
+    background:
+        rgba(255,255,255,.09);
+
+    margin:
+        18px 14px;
+}
+
+
+/* =====================================================
+   SIDEBAR BOTTOM
+===================================================== */
+
+.sidebar-bottom {
+    position: absolute;
+
+    bottom: 0;
+
+    left: 0;
+
+    right: 0;
+
+    padding:
+        0 18px 20px;
+}
+
+.sidebar-user {
+    border-top:
+        1px solid rgba(255,255,255,.08);
+
+    padding-top: 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.avatar {
+    width: 34px;
+
+    height: 34px;
+
+    border-radius: 50%;
+
+    background: #286b57;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+.user-name {
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+.user-role {
+    font-size: 9px;
+
+    color:
+        rgba(255,255,255,.42);
+
+    margin-top: 2px;
+}
+
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.main {
+    margin-left: 245px;
+
+    min-height: 100vh;
+}
+
+
+/* =====================================================
+   TOPBAR
+===================================================== */
+
+.topbar {
+    height: 66px;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 40;
+
+    background:
+        rgba(255,255,255,.86);
+
+    backdrop-filter:
+        blur(14px);
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        0 28px;
+}
+
+.dark .topbar {
+    background:
+        rgba(16,21,19,.88);
+
+    border-color:
+        rgba(255,255,255,.07);
+}
+
+.global-search {
+    width: 460px;
+
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding:
+        0 14px;
+
+    border:
+        1px solid #dfe5e1;
+
+    background: white;
+
+    border-radius: 11px;
+
+    color: #94a3b8;
+}
+
+.dark .global-search {
+    background: #17201d;
+
+    border-color:
+        rgba(255,255,255,.08);
+
+    color: #94a3b8;
+}
+
+.global-search input {
+    width: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color: inherit;
+
+    font-size: 12px;
+}
+
+.top-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.icon-btn,
+.theme-btn {
+    width: 38px;
+
+    height: 38px;
+
+    border-radius: 50%;
+
+    border: 1px solid #e1e7e4;
+
+    background: white;
+
+    color: #334155;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition:
+        transform .25s ease,
+        background .25s ease,
+        border-color .25s ease;
+}
+
+.icon-btn:hover,
+.theme-btn:hover {
+    transform: translateY(-2px);
+
+    border-color: #b7d2c7;
+}
+
+.dark .icon-btn,
+.dark .theme-btn {
+    background: #17201d;
+
+    color: #dbe5e1;
+
+    border-color:
+        rgba(255,255,255,.08);
+}
+
+.profile {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding-left: 14px;
+
+    margin-left: 5px;
+
+    border-left:
+        1px solid #e5e7eb;
+}
+
+.dark .profile {
+    border-color:
+        rgba(255,255,255,.08);
+}
+
+.profile-name {
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+.profile-role {
+    font-size: 9px;
+
+    color: #94a3b8;
+
+    margin-top: 2px;
+}
+
+
+/* =====================================================
+   CONTENT
+===================================================== */
+
+.content {
+    padding:
+        30px 34px 50px;
+}
+
+.breadcrumb {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: #28765f;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    margin-bottom: 6px;
+}
+
+.page-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    margin-bottom: 25px;
+}
+
+.page-title {
+    font-size: 32px;
+
+    line-height: 1.1;
+
+    font-weight: 700;
+
+    letter-spacing: -.04em;
+
+    color: #0f172a;
+}
+
+.dark .page-title {
+    color: #f1f5f9;
+}
+
+.page-subtitle {
+    margin-top: 7px;
+
+    color: #718096;
+
+    font-size: 13px;
+}
+
+.dark .page-subtitle {
+    color: #94a3b8;
+}
+
+.header-actions {
+    display: flex;
+
+    gap: 9px;
+}
+
+.refresh-btn {
+    border: none;
+
+    background: #286b57;
+
+    color: white;
+
+    height: 40px;
+
+    padding:
+        0 16px;
+
+    border-radius: 9px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    cursor: pointer;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        background .25s ease;
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+
+    background: #205c4b;
+
+    box-shadow:
+        0 8px 20px
+        rgba(40,107,87,.20);
+}
+
+.refresh-btn.spinning svg {
+    animation:
+        spin .65s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =====================================================
+   SUMMARY CARDS
+===================================================== */
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0,1fr));
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    position: relative;
+
+    overflow: hidden;
+
+    background: white;
+
+    border:
+        1px solid #e1e8e4;
+
+    border-radius: 14px;
+
+    padding: 19px;
+
+    min-height: 138px;
+
+    transition:
+        transform .35s cubic-bezier(.22,1,.36,1),
+        box-shadow .35s ease,
+        border-color .35s ease;
+}
+
+.dark .stat-card {
+    background: #17201d;
+
+    border-color:
+        rgba(255,255,255,.07);
+}
+
+.stat-card:hover {
+    transform:
+        translateY(-5px)
+        rotateX(1deg);
+
+    box-shadow:
+        0 16px 35px
+        rgba(15,23,42,.09);
+
+    border-color:
+        #bdd9ce;
+}
+
+.dark .stat-card:hover {
+    box-shadow:
+        0 16px 35px
+        rgba(0,0,0,.28);
+}
+
+.stat-top {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+.stat-icon {
+    width: 39px;
+
+    height: 39px;
+
+    border-radius: 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #eaf5f0;
+
+    color: #28765f;
+}
+
+.dark .stat-icon {
+    background:
+        rgba(79,160,131,.12);
+}
+
+.stat-change {
+    font-size: 10px;
+
+    padding:
+        5px 8px;
+
+    border-radius: 999px;
+
+    background: #ecfdf5;
+
+    color: #16805d;
+
+    font-weight: 600;
+}
+
+.stat-label {
+    color: #718096;
+
+    font-size: 11px;
+
+    margin-top: 17px;
+}
+
+.stat-value {
+    color: #0f172a;
+
+    font-size: 27px;
+
+    font-weight: 700;
+
+    letter-spacing: -.03em;
+
+    margin-top: 2px;
+}
+
+.dark .stat-value {
+    color: #f8fafc;
+}
+
+.dark .stat-label {
+    color: #94a3b8;
+}
+
+.stat-description {
+    font-size: 10px;
+
+    color: #a0aec0;
+
+    margin-top: 2px;
+}
+
+
+/* =====================================================
+   FILTER PANEL
+===================================================== */
+
+.panel {
+    background: white;
+
+    border:
+        1px solid #e1e8e4;
+
+    border-radius: 15px;
+
+    overflow: hidden;
+}
+
+.dark .panel {
+    background: #17201d;
+
+    border-color:
+        rgba(255,255,255,.07);
+}
+
+.filter-panel {
+    padding: 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    border-bottom:
+        1px solid #e7ece9;
+}
+
+.dark .filter-panel {
+    border-color:
+        rgba(255,255,255,.07);
+}
+
+.restaurant-search {
+    flex: 1;
+
+    height: 40px;
+
+    border:
+        1px solid #dce4e0;
+
+    border-radius: 9px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding:
+        0 12px;
+
+    color: #94a3b8;
+}
+
+.dark .restaurant-search {
+    background: #111815;
+
+    border-color:
+        rgba(255,255,255,.08);
+}
+
+.restaurant-search input {
+    width: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color: #334155;
+
+    font-size: 12px;
+}
+
+.dark .restaurant-search input {
+    color: #e2e8f0;
+}
+
+.filter-select {
+    height: 40px;
+
+    min-width: 135px;
+
+    border:
+        1px solid #dce4e0;
+
+    background: white;
+
+    color: #475569;
+
+    border-radius: 9px;
+
+    padding:
+        0 11px;
+
+    outline: none;
+
+    font-size: 11px;
+
+    cursor: pointer;
+}
+
+.dark .filter-select {
+    background: #111815;
+
+    border-color:
+        rgba(255,255,255,.08);
+
+    color: #cbd5e1;
+}
+
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 850px;
+}
+
+thead {
+    background:
+        #f8faf9;
+}
+
+.dark thead {
+    background:
+        #121916;
+}
+
+th {
+    text-align: left;
+
+    padding:
+        12px 15px;
+
+    color: #82908a;
+
+    font-size: 9px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .08em;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+td {
+    padding:
+        15px;
+
+    border-top:
+        1px solid #edf1ef;
+
+    font-size: 11px;
+
+    color: #475569;
+
+    white-space: nowrap;
+}
+
+.dark td {
+    border-color:
+        rgba(255,255,255,.06);
+
+    color: #cbd5e1;
+}
+
+tbody tr {
+    transition:
+        background .25s ease,
+        transform .25s ease;
+}
+
+tbody tr:hover {
+    background:
+        #f7faf8;
+}
+
+.dark tbody tr:hover {
+    background:
+        rgba(255,255,255,.025);
+}
+
+.restaurant-cell {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.restaurant-avatar {
+    width: 35px;
+
+    height: 35px;
+
+    border-radius: 9px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #e8f3ee;
+
+    color: #286b57;
+
+    font-weight: 700;
+
+    font-size: 11px;
+}
+
+.dark .restaurant-avatar {
+    background:
+        rgba(79,160,131,.13);
+}
+
+.restaurant-name {
+    color: #17221e;
+
+    font-weight: 650;
+
+    font-size: 12px;
+}
+
+.dark .restaurant-name {
+    color: #f1f5f9;
+}
+
+.restaurant-location {
+    color: #9aa7a2;
+
+    font-size: 9px;
+
+    margin-top: 2px;
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+.status {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding:
+        5px 9px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 6px;
+
+    height: 6px;
+
+    border-radius: 50%;
+}
+
+.status-online {
+    background: #ecfdf5;
+
+    color: #147957;
+}
+
+.status-online .status-dot {
+    background: #27a879;
+}
+
+.status-busy {
+    background: #fff7e8;
+
+    color: #b76a08;
+}
+
+.status-busy .status-dot {
+    background: #ed9b29;
+}
+
+.status-offline {
+    background: #fff0f0;
+
+    color: #c24141;
+}
+
+.status-offline .status-dot {
+    background: #dc5b5b;
+}
+
+
+/* =====================================================
+   RISK
+===================================================== */
+
+.risk {
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+.risk-low {
+    color: #23815f;
+}
+
+.risk-medium {
+    color: #c17a15;
+}
+
+.risk-high {
+    color: #d34e4e;
+}
+
+
+/* =====================================================
+   VIEW BUTTON
+===================================================== */
+
+.view-btn {
+    border:
+        1px solid #d8e4df;
+
+    background: white;
+
+    color: #286b57;
+
+    border-radius: 7px;
+
+    padding:
+        6px 10px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform .2s ease,
+        background .2s ease,
+        border-color .2s ease;
+}
+
+.view-btn:hover {
+    background: #eef8f4;
+
+    border-color: #b8d5c9;
+
+    transform: translateY(-1px);
+}
+
+.dark .view-btn {
+    background: #17201d;
+
+    border-color:
+        rgba(255,255,255,.09);
+
+    color: #86c4ae;
+}
+
+
+/* =====================================================
+   PAGINATION
+===================================================== */
+
+.pagination {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        13px 15px;
+
+    border-top:
+        1px solid #e7ece9;
+}
+
+.dark .pagination {
+    border-color:
+        rgba(255,255,255,.07);
+}
+
+.page-info {
+    font-size: 10px;
+
+    color: #8b9893;
+}
+
+.page-buttons {
+    display: flex;
+
+    gap: 5px;
+}
+
+.page-btn {
+    width: 30px;
+
+    height: 30px;
+
+    border:
+        1px solid #dfe6e2;
+
+    background: white;
+
+    border-radius: 7px;
+
+    color: #64748b;
+
+    cursor: pointer;
+
+    font-size: 10px;
+
+    transition:
+        all .2s ease;
+}
+
+.page-btn:hover {
+    border-color: #a8cabc;
+
+    color: #286b57;
+}
+
+.page-btn.active {
+    background: #286b57;
+
+    color: white;
+
+    border-color: #286b57;
+}
+
+.dark .page-btn {
+    background: #17201d;
+
+    border-color:
+        rgba(255,255,255,.08);
+
+    color: #94a3b8;
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 500;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(8,17,14,.52);
+
+    backdrop-filter:
+        blur(7px);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        opacity .3s ease;
+}
+
+.modal.show {
+    opacity: 1;
+
+    pointer-events: auto;
+}
+
+.modal-card {
+    width: min(650px, 100%);
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: white;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 30px 80px
+        rgba(0,0,0,.25);
+
+    transform:
+        translateY(20px)
+        scale(.96);
+
+    transition:
+        transform .4s
+        cubic-bezier(.22,1,.36,1);
+}
+
+.dark .modal-card {
+    background: #17201d;
+
+    color: #f8fafc;
+}
+
+.modal.show .modal-card {
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+.modal-header {
+    padding:
+        22px;
+
+    border-bottom:
+        1px solid #e6ebe8;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+}
+
+.dark .modal-header {
+    border-color:
+        rgba(255,255,255,.07);
+}
+
+.modal-close {
+    width: 34px;
+
+    height: 34px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #f1f5f3;
+
+    cursor: pointer;
+
+    color: #64748b;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transition: transform .2s ease;
+}
+
+.modal-close:hover {
+    transform:
+        rotate(90deg);
+}
+
+.dark .modal-close {
+    background: #111815;
+
+    color: #cbd5e1;
+}
+
+.modal-body {
+    padding: 22px;
+}
+
+.detail-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+}
+
+.detail-avatar {
+    width: 52px;
+
+    height: 52px;
+
+    border-radius: 13px;
+
+    background: #e8f3ee;
+
+    color: #286b57;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-weight: 700;
+
+    font-size: 14px;
+}
+
+.dark .detail-avatar {
+    background:
+        rgba(79,160,131,.13);
+}
+
+.detail-title {
+    font-size: 20px;
+
+    font-weight: 700;
+}
+
+.detail-location {
+    font-size: 10px;
+
+    color: #94a3b8;
+
+    margin-top: 3px;
+}
+
+.detail-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap: 10px;
+
+    margin-top: 22px;
+}
+
+.detail-card {
+    background: #f7faf8;
+
+    border-radius: 11px;
+
+    padding: 14px;
+}
+
+.dark .detail-card {
+    background: #111815;
+}
+
+.detail-card-label {
+    color: #8a9792;
+
+    font-size: 9px;
+}
+
+.detail-card-value {
+    margin-top: 4px;
+
+    font-size: 18px;
+
+    font-weight: 700;
+}
+
+.section-title {
+    font-size: 11px;
+
+    font-weight: 700;
+
+    margin-top: 22px;
+
+    margin-bottom: 10px;
+}
+
+.recent-orders {
+    display: grid;
+
+    gap: 7px;
+}
+
+.recent-order {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        11px 12px;
+
+    border:
+        1px solid #e5ebe8;
+
+    border-radius: 9px;
+
+    transition:
+        transform .2s ease,
+        background .2s ease;
+}
+
+.recent-order:hover {
+    transform: translateX(3px);
+
+    background: #f7faf8;
+}
+
+.dark .recent-order {
+    border-color:
+        rgba(255,255,255,.07);
+}
+
+.dark .recent-order:hover {
+    background: #111815;
+}
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+.toast {
+    position: fixed;
+
+    right: 25px;
+
+    bottom: 25px;
+
+    z-index: 1000;
+
+    background: #10231e;
+
+    color: white;
+
+    border-radius: 13px;
+
+    padding:
+        13px 17px;
+
+    min-width: 230px;
+
+    box-shadow:
+        0 15px 40px
+        rgba(0,0,0,.20);
+
+    transform:
+        translateY(25px);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        all .35s
+        cubic-bezier(.22,1,.36,1);
+}
+
+.toast.show {
+    transform:
+        translateY(0);
+
+    opacity: 1;
+}
+
+.toast-title {
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+.toast-message {
+    margin-top: 3px;
+
+    font-size: 10px;
+
+    color: rgba(255,255,255,.55);
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+.mobile-menu {
+    display: none;
+}
+
+.overlay {
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        rgba(0,0,0,.45);
+
+    z-index: 90;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: opacity .3s ease;
+}
+
+.overlay.show {
+    opacity: 1;
+
+    pointer-events: auto;
+}
+
+
+@media(max-width: 1100px) {
+
+    .stats {
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .global-search {
+        width: 350px;
+    }
+}
+
+
+@media(max-width: 900px) {
+
+    .sidebar {
+        transform:
+            translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform:
+            translateX(0);
+    }
+
+    .main {
+        margin-left: 0;
+    }
+
+    .mobile-menu {
+        display: flex;
+    }
+
+    .content {
+        padding:
+            25px 20px 40px;
+    }
+
+    .global-search {
+        display: none;
+    }
+
+    .page-header {
+        flex-direction: column;
+
+        gap: 15px;
+    }
+}
+
+
+@media(max-width: 650px) {
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-panel {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .page-title {
+        font-size: 27px;
+    }
+
+    .detail-grid {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+    .profile-info {
+        display: none;
+    }
+
+    .topbar {
+        padding:
+            0 15px;
+    }
+}
+
+
+@media(max-width: 450px) {
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .content {
+        padding:
+            22px 14px 35px;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .refresh-btn {
+        flex: 1;
+
+        justify-content: center;
+    }
+}
+
+</style>
+<link rel="stylesheet" href="../app-sidebar.css">
+</head>
+
+
+<body>
+
+<!-- =====================================================
+     THEME TRANSITION
+===================================================== -->
+
+<div
+    class="theme-transition"
+    id="themeTransition">
+</div>
+
+
+<!-- =====================================================
+     MOBILE OVERLAY
+===================================================== -->
+
+<div
+    class="overlay"
+    id="overlay">
+</div>
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside
+    class="sidebar"
+    id="sidebar">
+
+    <div class="logo-area">
+
+        <!-- SAME ROUTEIQ LOGO -->
+        <img
+            src="../routeiq-logo.svg"
+            alt="RouteIQ">
+
+        <div class="logo-text">
+
+            <div class="logo-title">
+                Route<span>IQ</span>
+            </div>
+
+            <div class="logo-subtitle">
+                Operations
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <nav class="nav">
+
+        <a
+            href="dashboard.html"
+            class="nav-link">
+
+            <span class="nav-icon">
+                <i data-lucide="layout-dashboard"></i>
+            </span>
+
+            Dashboard
+
+        </a>
+
+
+        <a
+            href="orders.html"
+            class="nav-link">
+
+            <span class="nav-icon">
+                <i data-lucide="package-search"></i>
+            </span>
+
+            Orders
+
+        </a>
+
+
+        <a
+            href="liveoperations.html"
+            class="nav-link">
+
+            <span class="nav-icon">
+                <i data-lucide="radio-tower"></i>
+            </span>
+
+            Live Operations
+
+        </a>
+
+
+        <a
+            href="riders.html"
+            class="nav-link">
+
+            <span class="nav-icon">
+                <i data-lucide="bike"></i>
+            </span>
+
+            Riders
+
+        </a>
+
+
+        <a
+            href="restaurant.html"
+            class="nav-link active">
+
+            <span class="nav-icon">
+                <i data-lucide="store"></i>
+            </span>
+
+            Restaurants
+
+        </a>
+
+
+        <a
+            href="#"
+            class="nav-link"
+            data-coming="Analytics">
+
+            <span class="nav-icon">
+                <i data-lucide="chart-no-axes-combined"></i>
+            </span>
+
+            Analytics
+
+        </a>
+
+
+        <a
+            href="#"
+            class="nav-link"
+            data-coming="Reports">
+
+            <span class="nav-icon">
+                <i data-lucide="file-text"></i>
+            </span>
+
+            Reports
+
+        </a>
+
+    </nav>
+
+
+    <div class="nav-divider"></div>
+
+
+    <nav class="nav">
+
+        <div class="nav-section">
+            Settings
+        </div>
+
+
+        <a
+            href="#"
+            class="nav-link"
+            data-coming="Profile">
+
+            <span class="nav-icon">
+                <i data-lucide="circle-user-round"></i>
+            </span>
+
+            Profile
+
+        </a>
+
+
+        <a
+            href="#"
+            class="nav-link"
+            data-coming="Notifications">
+
+            <span class="nav-icon">
+                <i data-lucide="bell"></i>
+            </span>
+
+            Notifications
+
+        </a>
+
+
+        <a
+            href="#"
+            class="nav-link"
+            data-coming="Settings">
+
+            <span class="nav-icon">
+                <i data-lucide="settings"></i>
+            </span>
+
+            Settings
+
+        </a>
+
+    </nav>
+
+
+    <div class="sidebar-bottom">
+
+        <div class="sidebar-user">
+
+            <div class="avatar">
+                AS
+            </div>
+
+            <div>
+
+                <div class="user-name">
+                    Anshika Singhroul
+                </div>
+
+                <div class="user-role">
+                    Operations Manager
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="main">
+
+
+<!-- =====================================================
+     TOPBAR
+===================================================== -->
+
+<header class="topbar">
+
+    <div class="flex items-center gap-3">
+
+        <button
+            class="icon-btn mobile-menu"
+            id="mobileMenu"
+            aria-label="Open menu">
+
+            <i data-lucide="menu"></i>
+
+        </button>
+
+
+        <div class="global-search">
+
+            <i
+                data-lucide="search"
+                class="w-4 h-4">
+            </i>
+
+            <input
+                id="globalSearch"
+                type="text"
+                placeholder="Search orders, restaurant, rider, or order ID...">
+
+        </div>
+
+    </div>
+
+
+    <div class="top-actions">
+
+        <button
+            class="icon-btn"
+            id="notificationBtn"
+            title="Notifications">
+
+            <i data-lucide="bell"></i>
+
+        </button>
+
+
+        <button
+            class="theme-btn"
+            id="themeToggle"
+            title="Toggle theme">
+
+            <i
+                id="themeIcon"
+                data-lucide="sun-moon">
+            </i>
+
+        </button>
+
+
+        <div class="profile">
+
+            <div class="avatar">
+                AS
+            </div>
+
+            <div class="profile-info">
+
+                <div class="profile-name">
+                    Anshika Singhroul
+                </div>
+
+                <div class="profile-role">
+                    Operations Manager
+                </div>
+
+            </div>
+
+            <i
+                data-lucide="chevron-down"
+                class="w-4 h-4 text-slate-400">
+            </i>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- =====================================================
+     PAGE CONTENT
+===================================================== -->
+
+<section class="content">
+
+
+    <!-- HEADER -->
+
+    <div class="breadcrumb">
+
+        <i
+            data-lucide="activity"
+            class="w-3.5 h-3.5">
+        </i>
+
+        Operations
+
+        <span class="text-slate-400">
+            /
+        </span>
+
+        Restaurants
+
+    </div>
+
+
+    <div class="page-header">
+
+        <div>
+
+            <h1 class="page-title">
+                Restaurants
+            </h1>
+
+            <p class="page-subtitle">
+                Monitor restaurant activity, orders & preparation performance.
+            </p>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <button
+                class="refresh-btn"
+                id="refreshBtn">
+
+                <i
+                    data-lucide="refresh-cw"
+                    class="w-4 h-4">
+                </i>
+
+                Refresh
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         SUMMARY CARDS
+    ================================================= -->
+
+    <div class="stats">
+
+
+        <!-- TOTAL -->
+
+        <div class="stat-card">
+
+            <div class="stat-top">
+
+                <div class="stat-icon">
+
+                    <i
+                        data-lucide="store"
+                        class="w-[18px] h-[18px]">
+                    </i>
+
+                </div>
+
+                <div class="stat-change">
+                    ↑ 4%
+                </div>
+
+            </div>
+
+            <div class="stat-label">
+                Total Restaurants
+            </div>
+
+            <div
+                class="stat-value"
+                id="totalRestaurants">
+                56
+            </div>
+
+            <div class="stat-description">
+                Across your network
+            </div>
+
+        </div>
+
+
+        <!-- ONLINE -->
+
+        <div class="stat-card">
+
+            <div class="stat-top">
+
+                <div class="stat-icon">
+
+                    <i
+                        data-lucide="radio"
+                        class="w-[18px] h-[18px]">
+                    </i>
+
+                </div>
+
+                <div class="stat-change">
+                    ↑ 6%
+                </div>
+
+            </div>
+
+            <div class="stat-label">
+                Online
+            </div>
+
+            <div
+                class="stat-value"
+                id="onlineRestaurants">
+                42
+            </div>
+
+            <div class="stat-description">
+                Currently accepting orders
+            </div>
+
+        </div>
+
+
+        <!-- BUSY -->
+
+        <div class="stat-card">
+
+            <div class="stat-top">
+
+                <div
+                    class="stat-icon"
+                    style="
+                        background:#fff5e8;
+                        color:#c27a17;
+                    ">
+
+                    <i
+                        data-lucide="flame"
+                        class="w-[18px] h-[18px]">
+                    </i>
+
+                </div>
+
+                <div
+                    class="stat-change"
+                    style="
+                        background:#fff7ed;
+                        color:#c26d12;
+                    ">
+                    8 active
+                </div>
+
+            </div>
+
+            <div class="stat-label">
+                Busy
+            </div>
+
+            <div
+                class="stat-value"
+                id="busyRestaurants">
+                8
+            </div>
+
+            <div class="stat-description">
+                High order volume
+            </div>
+
+        </div>
+
+
+        <!-- PREP -->
+
+        <div class="stat-card">
+
+            <div class="stat-top">
+
+                <div class="stat-icon">
+
+                    <i
+                        data-lucide="timer"
+                        class="w-[18px] h-[18px]">
+                    </i>
+
+                </div>
+
+                <div class="stat-change">
+                    ↓ 1.8 min
+                </div>
+
+            </div>
+
+            <div class="stat-label">
+                Avg Prep Time
+            </div>
+
+            <div
+                class="stat-value"
+                id="avgPrep">
+                18 min
+            </div>
+
+            <div class="stat-description">
+                Today's network average
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         RESTAURANT PANEL
+    ================================================= -->
+
+    <div class="panel">
+
+
+        <!-- FILTERS -->
+
+        <div class="filter-panel">
+
+            <div class="restaurant-search">
+
+                <i
+                    data-lucide="search"
+                    class="w-4 h-4">
+                </i>
+
+                <input
+                    id="restaurantSearch"
+                    type="text"
+                    placeholder="Search restaurants...">
+
+            </div>
+
+
+            <select
+                id="statusFilter"
+                class="filter-select">
+
+                <option value="All">
+                    All Status
+                </option>
+
+                <option value="Online">
+                    Online
+                </option>
+
+                <option value="Busy">
+                    Busy
+                </option>
+
+                <option value="Offline">
+                    Offline
+                </option>
+
+            </select>
+
+
+            <select
+                id="cuisineFilter"
+                class="filter-select">
+
+                <option value="All">
+                    All Cuisine
+                </option>
+
+                <option value="Indian">
+                    Indian
+                </option>
+
+                <option value="North Indian">
+                    North Indian
+                </option>
+
+                <option value="Chinese">
+                    Chinese
+                </option>
+
+                <option value="Fast Food">
+                    Fast Food
+                </option>
+
+                <option value="Cafe">
+                    Cafe
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- TABLE -->
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Restaurant
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Active Orders
+                        </th>
+
+                        <th>
+                            Avg Prep Time
+                        </th>
+
+                        <th>
+                            Delay Risk
+                        </th>
+
+                        <th>
+                            Rating
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody
+                    id="restaurantTable">
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- PAGINATION -->
+
+        <div class="pagination">
+
+            <div
+                class="page-info"
+                id="pageInfo">
+                Showing 1–8 of 56 restaurants
+            </div>
+
+
+            <div class="page-buttons">
+
+                <button
+                    class="page-btn"
+                    id="prevPage">
+
+                    <i
+                        data-lucide="chevron-left"
+                        class="w-3.5 h-3.5">
+                    </i>
+
+                </button>
+
+
+                <button
+                    class="page-btn active">
+                    1
+                </button>
+
+
+                <button
+                    class="page-btn"
+                    id="nextPage">
+
+                    <i
+                        data-lucide="chevron-right"
+                        class="w-3.5 h-3.5">
+                    </i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- =====================================================
+     RESTAURANT DETAILS MODAL
+===================================================== -->
+
+<div
+    class="modal"
+    id="restaurantModal">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div>
+
+                <div
+                    class="text-[9px] uppercase tracking-[.15em] text-route-500 font-semibold">
+                    Restaurant Details
+                </div>
+
+                <div
+                    class="text-[10px] text-slate-400 mt-1">
+                    Operations performance
+                </div>
+
+            </div>
+
+
+            <button
+                class="modal-close"
+                id="closeModal">
+
+                <i
+                    data-lucide="x"
+                    class="w-4 h-4">
+                </i>
+
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+
+            <!-- RESTAURANT HEADER -->
+
+            <div class="detail-header">
+
+                <div
+                    class="detail-avatar"
+                    id="detailAvatar">
+                    SH
+                </div>
+
+                <div class="flex-1">
+
+                    <div
+                        class="detail-title"
+                        id="detailName">
+                        Spice Hub
+                    </div>
+
+                    <div
+                        class="detail-location"
+                        id="detailLocation">
+                        Jabalpur • Indian
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="detailStatus"
+                    class="status status-online">
+
+                    <span class="status-dot"></span>
+
+                    Online
+
+                </div>
+
+            </div>
+
+
+            <!-- METRICS -->
+
+            <div class="detail-grid">
+
+
+                <div class="detail-card">
+
+                    <div class="detail-card-label">
+                        Today's Orders
+                    </div>
+
+                    <div
+                        class="detail-card-value"
+                        id="detailOrders">
+                        84
+                    </div>
+
+                </div>
+
+
+                <div class="detail-card">
+
+                    <div class="detail-card-label">
+                        Active Orders
+                    </div>
+
+                    <div
+                        class="detail-card-value"
+                        id="detailActive">
+                        8
+                    </div>
+
+                </div>
+
+
+                <div class="detail-card">
+
+                    <div class="detail-card-label">
+                        Completed
+                    </div>
+
+                    <div
+                        class="detail-card-value"
+                        id="detailCompleted">
+                        76
+                    </div>
+
+                </div>
+
+
+                <div class="detail-card">
+
+                    <div class="detail-card-label">
+                        Avg Preparation
+                    </div>
+
+                    <div
+                        class="detail-card-value"
+                        id="detailPrep">
+                        16 min
+                    </div>
+
+                </div>
+
+
+                <div class="detail-card">
+
+                    <div class="detail-card-label">
+                        Delayed Orders
+                    </div>
+
+                    <div
+                        class="detail-card-value"
+                        id="detailDelayed">
+                        3
+                    </div>
+
+                </div>
+
+
+                <div class="detail-card">
+
+                    <div class="detail-card-label">
+                        Delay Rate
+                    </div>
+
+                    <div
+                        class="detail-card-value"
+                        id="detailDelayRate">
+                        3.6%
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PEAK HOUR -->
+
+            <div class="section-title">
+                Peak Hour
+            </div>
+
+            <div
+                class="flex items-center justify-between p-3 rounded-xl bg-route-50 dark:bg-white/5">
+
+                <div class="flex items-center gap-3">
+
+                    <div
+                        class="w-9 h-9 rounded-lg bg-route-100 dark:bg-route-500/10 flex items-center justify-center text-route-600">
+
+                        <i
+                            data-lucide="clock-3"
+                            class="w-4 h-4">
+                        </i>
+
+                    </div>
+
+                    <div>
+
+                        <div class="text-xs font-semibold">
+                            7 PM – 9 PM
+                        </div>
+
+                        <div class="text-[9px] text-slate-400">
+                            Highest order volume
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <span
+                    class="text-[10px] font-semibold text-route-600">
+                    Peak
+                </span>
+
+            </div>
+
+
+            <!-- RECENT ORDERS -->
+
+            <div class="section-title">
+                Recent Orders
+            </div>
+
+            <div
+                class="recent-orders"
+                id="recentOrders">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     TOAST
+===================================================== -->
+
+<div
+    class="toast"
+    id="toast">
+
+    <div
+        class="toast-title"
+        id="toastTitle">
+        Done
+    </div>
+
+    <div
+        class="toast-message"
+        id="toastMessage">
+        Action completed successfully.
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   DATA
+===================================================== */
+
+const restaurants = [
+
+    {
+        id: "REST-001",
+        name: "Spice Hub",
+        location: "Jabalpur",
+        cuisine: "Indian",
+        status: "Online",
+        orders: 84,
+        active: 8,
+        completed: 76,
+        prep: 16,
+        delayed: 3,
+        rating: 4.5
+    },
+
+    {
+        id: "REST-002",
+        name: "Urban Bites",
+        location: "Jabalpur",
+        cuisine: "Fast Food",
+        status: "Busy",
+        orders: 112,
+        active: 14,
+        completed: 98,
+        prep: 27,
+        delayed: 11,
+        rating: 4.2
+    },
+
+    {
+        id: "REST-003",
+        name: "The Curry House",
+        location: "Jabalpur",
+        cuisine: "North Indian",
+        status: "Online",
+        orders: 69,
+        active: 5,
+        completed: 64,
+        prep: 19,
+        delayed: 4,
+        rating: 4.4
+    },
+
+    {
+        id: "REST-004",
+        name: "Green Plate",
+        location: "Wright Town",
+        cuisine: "Indian",
+        status: "Online",
+        orders: 76,
+        active: 6,
+        completed: 70,
+        prep: 18,
+        delayed: 5,
+        rating: 4.6
+    },
+
+    {
+        id: "REST-005",
+        name: "Burger Lab",
+        location: "Civic Lines",
+        cuisine: "Fast Food",
+        status: "Busy",
+        orders: 98,
+        active: 12,
+        completed: 86,
+        prep: 24,
+        delayed: 9,
+        rating: 4.3
+    },
+
+    {
+        id: "REST-006",
+        name: "Wok Street",
+        location: "Napier Town",
+        cuisine: "Chinese",
+        status: "Online",
+        orders: 63,
+        active: 4,
+        completed: 59,
+        prep: 17,
+        delayed: 2,
+        rating: 4.5
+    },
+
+    {
+        id: "REST-007",
+        name: "Bean & Brew",
+        location: "South Civil Lines",
+        cuisine: "Cafe",
+        status: "Offline",
+        orders: 41,
+        active: 0,
+        completed: 41,
+        prep: 14,
+        delayed: 1,
+        rating: 4.7
+    },
+
+    {
+        id: "REST-008",
+        name: "Tandoor Junction",
+        location: "Vijay Nagar",
+        cuisine: "North Indian",
+        status: "Online",
+        orders: 88,
+        active: 7,
+        completed: 81,
+        prep: 21,
+        delayed: 6,
+        rating: 4.1
+    },
+
+    {
+        id: "REST-009",
+        name: "Fresh Bowl",
+        location: "Model Road",
+        cuisine: "Indian",
+        status: "Online",
+        orders: 57,
+        active: 4,
+        completed: 53,
+        prep: 15,
+        delayed: 2,
+        rating: 4.6
+    },
+
+    {
+        id: "REST-010",
+        name: "Cafe Nova",
+        location: "Napier Town",
+        cuisine: "Cafe",
+        status: "Busy",
+        orders: 91,
+        active: 10,
+        completed: 81,
+        prep: 23,
+        delayed: 7,
+        rating: 4.4
+    }
+
+];
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let currentPage = 1;
+
+const rowsPerPage = 8;
+
+let filteredRestaurants = [
+    ...restaurants
+];
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const table =
+    document.getElementById(
+        "restaurantTable"
+    );
+
+const searchInput =
+    document.getElementById(
+        "restaurantSearch"
+    );
+
+const statusFilter =
+    document.getElementById(
+        "statusFilter"
+    );
+
+const cuisineFilter =
+    document.getElementById(
+        "cuisineFilter"
+    );
+
+const pageInfo =
+    document.getElementById(
+        "pageInfo"
+    );
+
+const modal =
+    document.getElementById(
+        "restaurantModal"
+    );
+
+const toast =
+    document.getElementById(
+        "toast"
+    );
+
+
+/* =====================================================
+   INITIALIZE ICONS
+===================================================== */
+
+lucide.createIcons();
+
+
+/* =====================================================
+   INITIAL STATS
+===================================================== */
+
+function updateStats() {
+
+    const total = 56;
+
+    const online = 42;
+
+    const busy = 8;
+
+    const averagePrep = 18;
+
+    document.getElementById(
+        "totalRestaurants"
+    ).textContent = total;
+
+    document.getElementById(
+        "onlineRestaurants"
+    ).textContent = online;
+
+    document.getElementById(
+        "busyRestaurants"
+    ).textContent = busy;
+
+    document.getElementById(
+        "avgPrep"
+    ).textContent =
+        averagePrep + " min";
+}
+
+updateStats();
+
+
+/* =====================================================
+   INITIALS
+===================================================== */
+
+function initials(name) {
+
+    return name
+        .split(" ")
+        .map(word => word[0])
+        .join("")
+        .slice(0,2)
+        .toUpperCase();
+
+}
+
+
+/* =====================================================
+   STATUS HTML
+===================================================== */
+
+function statusHTML(status) {
+
+    const className =
+        status === "Online"
+            ? "status-online"
+            : status === "Busy"
+                ? "status-busy"
+                : "status-offline";
+
+    return `
+
+        <span class="status ${className}">
+
+            <span class="status-dot"></span>
+
+            ${status}
+
+        </span>
+
+    `;
+}
+
+
+/* =====================================================
+   RISK
+===================================================== */
+
+function getRisk(prep) {
+
+    if (prep >= 25) {
+
+        return {
+            label: "High",
+            className: "risk-high"
+        };
+
+    }
+
+    if (prep >= 20) {
+
+        return {
+            label: "Medium",
+            className: "risk-medium"
+        };
+
+    }
+
+    return {
+        label: "Low",
+        className: "risk-low"
+    };
+
+}
+
+
+/* =====================================================
+   RENDER TABLE
+===================================================== */
+
+function renderTable() {
+
+    const start =
+        (currentPage - 1) *
+        rowsPerPage;
+
+    const end =
+        start + rowsPerPage;
+
+    const pageRows =
+        filteredRestaurants.slice(
+            start,
+            end
+        );
+
+
+    if (!pageRows.length) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="7"
+                    class="text-center py-12 text-slate-400">
+
+                    No restaurants found.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        pageInfo.textContent =
+            "No restaurants found";
+
+        return;
+
+    }
+
+
+    table.innerHTML =
+        pageRows.map(restaurant => {
+
+            const risk =
+                getRisk(
+                    restaurant.prep
+                );
+
+            return `
+
+                <tr>
+
+                    <td>
+
+                        <div class="restaurant-cell">
+
+                            <div class="restaurant-avatar">
+
+                                ${initials(
+                                    restaurant.name
+                                )}
+
+                            </div>
+
+                            <div>
+
+                                <div class="restaurant-name">
+
+                                    ${restaurant.name}
+
+                                </div>
+
+                                <div class="restaurant-location">
+
+                                    ${restaurant.location}
+                                    •
+                                    ${restaurant.cuisine}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        ${statusHTML(
+                            restaurant.status
+                        )}
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="font-semibold text-slate-800 dark:text-slate-100">
+
+                            ${restaurant.active}
+
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        ${restaurant.prep} min
+
+                    </td>
+
+
+                    <td>
+
+                        <span
+                            class="risk ${risk.className}">
+
+                            ${risk.label}
+
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="font-semibold">
+
+                            ${restaurant.rating}
+
+                        </span>
+
+                        <span class="text-amber-500">
+                            ★
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <button
+                            class="view-btn"
+                            onclick="openRestaurant('${restaurant.id}')">
+
+                            View
+
+                            <i
+                                data-lucide="arrow-up-right"
+                                class="inline-block w-3 h-3 ml-1">
+                            </i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }).join("");
+
+
+    const shownStart =
+        start + 1;
+
+    const shownEnd =
+        Math.min(
+            end,
+            filteredRestaurants.length
+        );
+
+    pageInfo.textContent =
+        `Showing ${shownStart}–${shownEnd} of ${filteredRestaurants.length} restaurants`;
+
+    lucide.createIcons();
+
+}
+
+
+/* =====================================================
+   FILTER
+===================================================== */
+
+function applyFilters() {
+
+    const query =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+    const status =
+        statusFilter.value;
+
+    const cuisine =
+        cuisineFilter.value;
+
+
+    filteredRestaurants =
+        restaurants.filter(
+            restaurant => {
+
+                const matchesSearch =
+                    !query ||
+                    restaurant.name
+                        .toLowerCase()
+                        .includes(query) ||
+                    restaurant.location
+                        .toLowerCase()
+                        .includes(query) ||
+                    restaurant.cuisine
+                        .toLowerCase()
+                        .includes(query);
+
+                const matchesStatus =
+                    status === "All" ||
+                    restaurant.status === status;
+
+                const matchesCuisine =
+                    cuisine === "All" ||
+                    restaurant.cuisine === cuisine;
+
+                return (
+                    matchesSearch &&
+                    matchesStatus &&
+                    matchesCuisine
+                );
+
+            }
+        );
+
+
+    currentPage = 1;
+
+    renderTable();
+
+}
+
+
+searchInput.addEventListener(
+    "input",
+    applyFilters
+);
+
+statusFilter.addEventListener(
+    "change",
+    applyFilters
+);
+
+cuisineFilter.addEventListener(
+    "change",
+    applyFilters
+);
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+function openRestaurant(id) {
+
+    const restaurant =
+        restaurants.find(
+            item => item.id === id
+        );
+
+    if (!restaurant) return;
+
+
+    document.getElementById(
+        "detailAvatar"
+    ).textContent =
+        initials(
+            restaurant.name
+        );
+
+
+    document.getElementById(
+        "detailName"
+    ).textContent =
+        restaurant.name;
+
+
+    document.getElementById(
+        "detailLocation"
+    ).textContent =
+        `${restaurant.location} • ${restaurant.cuisine}`;
+
+
+    const statusElement =
+        document.getElementById(
+            "detailStatus"
+        );
+
+
+    const statusClass =
+        restaurant.status === "Online"
+            ? "status-online"
+            : restaurant.status === "Busy"
+                ? "status-busy"
+                : "status-offline";
+
+
+    statusElement.className =
+        `status ${statusClass}`;
+
+
+    statusElement.innerHTML = `
+
+        <span class="status-dot"></span>
+
+        ${restaurant.status}
+
+    `;
+
+
+    document.getElementById(
+        "detailOrders"
+    ).textContent =
+        restaurant.orders;
+
+
+    document.getElementById(
+        "detailActive"
+    ).textContent =
+        restaurant.active;
+
+
+    document.getElementById(
+        "detailCompleted"
+    ).textContent =
+        restaurant.completed;
+
+
+    document.getElementById(
+        "detailPrep"
+    ).textContent =
+        `${restaurant.prep} min`;
+
+
+    document.getElementById(
+        "detailDelayed"
+    ).textContent =
+        restaurant.delayed;
+
+
+    const delayRate =
+        (
+            restaurant.delayed /
+            restaurant.orders *
+            100
+        ).toFixed(1);
+
+
+    document.getElementById(
+        "detailDelayRate"
+    ).textContent =
+        `${delayRate}%`;
+
+
+    const recentOrders = [
+        "ORD-1021",
+        "ORD-1028",
+        "ORD-1034"
+    ];
+
+
+    document.getElementById(
+        "recentOrders"
+    ).innerHTML =
+
+        recentOrders.map(
+            (order, index) => `
+
+                <div class="recent-order">
+
+                    <div class="flex items-center gap-3">
+
+                        <div class="w-7 h-7 rounded-lg bg-route-50 dark:bg-route-500/10 flex items-center justify-center">
+
+                            <i
+                                data-lucide="package"
+                                class="w-3.5 h-3.5 text-route-600">
+                            </i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="text-xs font-semibold">
+
+                                ${order}
+
+                            </div>
+
+                            <div class="text-[9px] text-slate-400">
+
+                                ${index === 0
+                                    ? "Preparing"
+                                    : index === 1
+                                        ? "On Delivery"
+                                        : "Delivered"}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <i
+                        data-lucide="chevron-right"
+                        class="w-3.5 h-3.5 text-slate-400">
+                    </i>
+
+                </div>
+
+            `
+        ).join("");
+
+
+    lucide.createIcons();
+
+    modal.classList.add("show");
+
+}
+
+
+/* =====================================================
+   CLOSE MODAL
+===================================================== */
+
+document.getElementById(
+    "closeModal"
+).addEventListener(
+    "click",
+    () => {
+
+        modal.classList.remove(
+            "show"
+        );
+
+    }
+);
+
+
+modal.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target === modal
+        ) {
+
+            modal.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            modal.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   PAGINATION
+===================================================== */
+
+document.getElementById(
+    "nextPage"
+).addEventListener(
+    "click",
+    () => {
+
+        const totalPages =
+            Math.ceil(
+                filteredRestaurants.length /
+                rowsPerPage
+            );
+
+        if (
+            currentPage <
+            totalPages
+        ) {
+
+            currentPage++;
+
+            renderTable();
+
+        }
+
+    }
+);
+
+
+document.getElementById(
+    "prevPage"
+).addEventListener(
+    "click",
+    () => {
+
+        if (
+            currentPage > 1
+        ) {
+
+            currentPage--;
+
+            renderTable();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   REFRESH
+===================================================== */
+
+document.getElementById(
+    "refreshBtn"
+).addEventListener(
+    "click",
+    function() {
+
+        const button = this;
+
+        button.classList.add(
+            "spinning"
+        );
+
+        setTimeout(
+            () => {
+
+                button.classList.remove(
+                    "spinning"
+                );
+
+                showToast(
+                    "Restaurants refreshed",
+                    "Restaurant operations data is up to date."
+                );
+
+            },
+            650
+        );
+
+    }
+);
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+function showToast(
+    title,
+    message
+) {
+
+    document.getElementById(
+        "toastTitle"
+    ).textContent = title;
+
+    document.getElementById(
+        "toastMessage"
+    ).textContent = message;
+
+    toast.classList.add(
+        "show"
+    );
+
+    clearTimeout(
+        window.routeToast
+    );
+
+    window.routeToast =
+        setTimeout(
+            () => {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2800
+        );
+
+}
+
+
+/* =====================================================
+   NOTIFICATIONS
+===================================================== */
+
+document.getElementById(
+    "notificationBtn"
+).addEventListener(
+    "click",
+    () => {
+
+        showToast(
+            "Notifications",
+            "3 restaurant alerts need attention."
+        );
+
+    }
+);
+
+
+/* =====================================================
+   COMING SOON NAV ITEMS
+===================================================== */
+
+document
+    .querySelectorAll(
+        "[data-coming]"
+    )
+    .forEach(
+        link => {
+
+            link.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+
+                    showToast(
+                        link.dataset.coming,
+                        "This RouteIQ module will be connected next."
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+/* =====================================================
+   MOBILE SIDEBAR
+===================================================== */
+
+const sidebar =
+    document.getElementById(
+        "sidebar"
+    );
+
+const overlay =
+    document.getElementById(
+        "overlay"
+    );
+
+document.getElementById(
+    "mobileMenu"
+).addEventListener(
+    "click",
+    () => {
+
+        sidebar.classList.add(
+            "open"
+        );
+
+        overlay.classList.add(
+            "show"
+        );
+
+    }
+);
+
+
+overlay.addEventListener(
+    "click",
+    () => {
+
+        sidebar.classList.remove(
+            "open"
+        );
+
+        overlay.classList.remove(
+            "show"
+        );
+
+    }
+);
+
+
+/* =====================================================
+   DARK / LIGHT THEME
+===================================================== */
+
+const themeToggle =
+    document.getElementById(
+        "themeToggle"
+    );
+
+const themeTransition =
+    document.getElementById(
+        "themeTransition"
+    );
+
+
+function updateThemeIcon() {
+
+    const dark =
+        document.documentElement
+            .classList
+            .contains("dark");
+
+    themeToggle.setAttribute(
+        "aria-label",
+        dark ? "Switch to light theme" : "Switch to dark theme"
+    );
+    themeToggle.setAttribute(
+        "title",
+        dark ? "Switch to light theme" : "Switch to dark theme"
+    );
+    themeToggle.innerHTML = `
+        <i
+            id="themeIcon"
+            data-lucide="${dark ? "sun" : "moon"}"
+            aria-hidden="true">
+        </i>
+    `;
+
+    lucide.createIcons();
+
+}
+
+
+function toggleTheme() {
+
+    const rect =
+        themeToggle
+            .getBoundingClientRect();
+
+
+    document.documentElement.style
+        .setProperty(
+            "--theme-x",
+            `${rect.left + rect.width / 2}px`
+        );
+
+
+    document.documentElement.style
+        .setProperty(
+            "--theme-y",
+            `${rect.top + rect.height / 2}px`
+        );
+
+
+    themeTransition.classList.add(
+        "active"
+    );
+
+
+    setTimeout(
+        () => {
+
+            const dark =
+                document.documentElement
+                    .classList
+                    .toggle("dark");
+
+
+            localStorage.setItem(
+                "routeiq-theme",
+                dark
+                    ? "dark"
+                    : "light"
+            );
+
+
+            updateThemeIcon();
+
+        },
+        180
+    );
+
+
+    setTimeout(
+        () => {
+
+            themeTransition.classList.remove(
+                "active"
+            );
+
+        },
+        700
+    );
+
+}
+
+
+themeToggle.addEventListener(
+    "click",
+    toggleTheme
+);
+
+
+/* =====================================================
+   LOAD SAVED THEME
+===================================================== */
+
+if (
+    localStorage.getItem(
+        "routeiq-theme"
+    ) === "dark"
+) {
+
+    document.documentElement
+        .classList
+        .add("dark");
+
+}
+
+
+updateThemeIcon();
+
+
+/* =====================================================
+   GLOBAL SEARCH
+===================================================== */
+
+document.getElementById(
+    "globalSearch"
+).addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter"
+        ) {
+
+            const query =
+                event.target.value
+                    .trim();
+
+            if (query) {
+
+                searchInput.value =
+                    query;
+
+                applyFilters();
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   FIRST RENDER
+===================================================== */
+
+renderTable();
+
+</script>
+
+<script src="../app-sidebar.js"></script>
+</body>
+</html>

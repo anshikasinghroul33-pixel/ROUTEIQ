@@ -1,0 +1,203 @@
+#sidebar.routeiq-sidebar {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  z-index: 50 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 245px !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  padding: 0 !important;
+  overflow-y: auto !important;
+  border-right: 1px solid rgba(255, 255, 255, .06) !important;
+  background: #13231e !important;
+  color: #fff !important;
+  transform: translateX(0);
+  transition: transform .3s ease !important;
+}
+
+#sidebar.routeiq-sidebar .routeiq-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 76px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  color: #fff;
+  text-decoration: none;
+}
+
+#sidebar.routeiq-sidebar .routeiq-brand img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+#sidebar.routeiq-sidebar .routeiq-brand-copy {
+  min-width: 0;
+}
+
+#sidebar.routeiq-sidebar .routeiq-brand-name {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -.025em;
+  line-height: 1.2;
+}
+
+#sidebar.routeiq-sidebar .routeiq-brand-subtitle {
+  margin-top: 3px;
+  color: rgba(255, 255, 255, .45);
+  font-size: 9px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+#sidebar.routeiq-sidebar .routeiq-nav-label {
+  padding: 22px 24px 8px;
+  color: rgba(255, 255, 255, .38);
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+#sidebar.routeiq-sidebar .routeiq-nav {
+  display: grid;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+#sidebar.routeiq-sidebar .routeiq-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  color: rgba(255, 255, 255, .66);
+  font-size: 13px;
+  line-height: 1.25;
+  text-decoration: none;
+  transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+#sidebar.routeiq-sidebar .routeiq-nav-link:hover {
+  transform: translateX(2px);
+  background: rgba(255, 255, 255, .07);
+  color: #fff;
+}
+
+#sidebar.routeiq-sidebar .routeiq-nav-link.is-active {
+  background: #285e4c;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+}
+
+#sidebar.routeiq-sidebar .routeiq-nav-link svg {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+}
+
+#sidebar.routeiq-sidebar .routeiq-alert-count {
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+#sidebar.routeiq-sidebar .routeiq-sidebar-footer {
+  margin-top: auto;
+  padding: 20px 24px 24px;
+}
+
+#sidebar.routeiq-sidebar .routeiq-sidebar-footer::before {
+  display: block;
+  height: 1px;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, .1);
+  content: "";
+}
+
+#sidebar.routeiq-sidebar .routeiq-sidebar-footer span {
+  display: block;
+  color: rgba(255, 255, 255, .46);
+  font-size: 11px;
+}
+
+#sidebar.routeiq-sidebar .routeiq-sidebar-footer strong {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, .8);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+#routeiqSidebarOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  display: none;
+  background: rgba(0, 0, 0, .42);
+}
+
+#routeiqSidebarMenu {
+  display: none;
+}
+
+main.routeiq-main-content,
+.main.routeiq-main-content,
+.main-content.routeiq-main-content {
+  margin-left: 245px !important;
+  width: calc(100% - 245px) !important;
+}
+
+@media (max-width: 1024px) {
+  #sidebar.routeiq-sidebar {
+    transform: translateX(-100%) !important;
+  }
+
+  #sidebar.routeiq-sidebar.routeiq-sidebar-open {
+    transform: translateX(0) !important;
+  }
+
+  #routeiqSidebarOverlay.routeiq-overlay-open {
+    display: block;
+  }
+
+  #routeiqSidebarMenu {
+    display: inline-flex !important;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    border: 1px solid rgba(148, 163, 184, .35);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .72);
+    color: #17201d;
+    cursor: pointer;
+  }
+
+  .dark #routeiqSidebarMenu {
+    border-color: rgba(255, 255, 255, .12);
+    background: #16201c;
+    color: #f3f7f5;
+  }
+
+  main.routeiq-main-content,
+  .main.routeiq-main-content,
+  .main-content.routeiq-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}

@@ -1,0 +1,2499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RouteIQ — Riders</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class"
+    };
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    .sidebar-item.active {
+      background: #285e4c;
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+
+    .dark .sidebar-item.active {
+      background: #39745e;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f8f7;
+      color: #17201d;
+      transition: background-color .35s ease, color .35s ease;
+    }
+
+    body.dark {
+      background: #0b1512;
+      color: #f3f7f5;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ================= SIDEBAR ================= */
+
+    .sidebar {
+      width: 245px;
+      min-width: 245px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 50;
+      background: #10231e;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      transition: transform .3s ease;
+    }
+
+    .logo-area {
+      height: 76px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .logo-area img {
+      width: 125px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .nav {
+      padding: 20px 12px;
+      flex: 1;
+    }
+
+    .nav-link {
+      height: 44px;
+      margin-bottom: 5px;
+      padding: 0 14px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #aabbb5;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all .25s ease;
+    }
+
+    .nav-link:hover {
+      color: white;
+      background: rgba(255,255,255,.07);
+      transform: translateX(2px);
+    }
+
+    .nav-link.active {
+      color: white;
+      background: #226b59;
+      box-shadow: inset 3px 0 #5ed6b0;
+    }
+
+    .nav-icon {
+      width: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .sidebar-bottom {
+      padding: 18px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #d9eee7;
+      color: #175646;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .sidebar-user small {
+      color: #81928c;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ================= MAIN ================= */
+
+    .main {
+      width: calc(100% - 245px);
+      margin-left: 245px;
+      min-height: 100vh;
+      transition: background .35s ease;
+    }
+
+    .topbar {
+      height: 76px;
+      background: rgba(255,255,255,.88);
+      border-bottom: 1px solid #e2e8e5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(15px);
+      transition: .35s ease;
+    }
+
+    body.dark .topbar {
+      background: rgba(13,28,23,.9);
+      border-color: #243a33;
+    }
+
+    .search-box {
+      width: min(430px, 50vw);
+      height: 42px;
+      background: #f4f7f5;
+      border: 1px solid #e1e8e5;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      transition: .25s ease;
+    }
+
+    body.dark .search-box {
+      background: #14251f;
+      border-color: #294039;
+    }
+
+    .search-box:focus-within {
+      border-color: #399c7d;
+      box-shadow: 0 0 0 3px rgba(57,156,125,.12);
+    }
+
+    .search-box input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      width: 100%;
+      color: inherit;
+      font-size: 13px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-btn,
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      border: 1px solid #dfe7e3;
+      background: white;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all .25s ease;
+    }
+
+    body.dark .theme-btn,
+    body.dark .icon-btn {
+      background: #152721;
+      border-color: #2a4038;
+      color: #eaf5f0;
+    }
+
+    .theme-btn:hover,
+    .icon-btn:hover {
+      transform: translateY(-2px);
+      border-color: #329878;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-left: 8px;
+    }
+
+    .profile-info {
+      line-height: 1.15;
+    }
+
+    .profile-info strong {
+      font-size: 13px;
+      display: block;
+    }
+
+    .profile-info span {
+      color: #84938e;
+      font-size: 11px;
+    }
+
+    .content {
+      padding: 28px 30px 45px;
+      max-width: 1700px;
+      margin: auto;
+    }
+
+    /* ================= PAGE HEADER ================= */
+
+    .breadcrumb {
+      font-size: 12px;
+      color: #379878;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 25px;
+      gap: 20px;
+    }
+
+    .page-title {
+      font-size: 29px;
+      font-weight: 750;
+      letter-spacing: -.7px;
+      margin: 0;
+    }
+
+    .page-subtitle {
+      color: #82908c;
+      margin: 6px 0 0;
+      font-size: 13px;
+    }
+
+    body.dark .page-subtitle {
+      color: #8fa39c;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 9px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      border: 0;
+      height: 40px;
+      padding: 0 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all .25s ease;
+    }
+
+    .primary-btn {
+      background: #216c59;
+      color: white;
+      box-shadow: 0 5px 15px rgba(33,108,89,.18);
+    }
+
+    .primary-btn:hover {
+      background: #195846;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(33,108,89,.25);
+    }
+
+    .secondary-btn {
+      background: white;
+      border: 1px solid #dce6e1;
+      color: #33443e;
+    }
+
+    body.dark .secondary-btn {
+      background: #14251f;
+      color: #dbe8e3;
+      border-color: #2b4039;
+    }
+
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+      border-color: #399c7d;
+    }
+
+    /* ================= STATS ================= */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid #e1e8e4;
+      border-radius: 15px;
+      padding: 18px;
+      transition: all .28s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body.dark .stat-card,
+    body.dark .panel {
+      background: #11231d;
+      border-color: #263b34;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(20,55,44,.08);
+    }
+
+    .stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: #e5f3ee;
+      color: #21765f;
+      font-size: 17px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #82908b;
+      margin-top: 15px;
+    }
+
+    .stat-number {
+      font-size: 26px;
+      font-weight: 750;
+      margin-top: 2px;
+    }
+
+    .stat-meta {
+      font-size: 11px;
+      color: #4c9c81;
+      margin-top: 4px;
+    }
+
+    /* ================= PANEL ================= */
+
+    .panel {
+      background: white;
+      border: 1px solid #e1e8e4;
+      border-radius: 15px;
+      overflow: hidden;
+      transition: .35s ease;
+    }
+
+    .panel-header {
+      padding: 17px 19px;
+      border-bottom: 1px solid #e8eeeb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    body.dark .panel-header {
+      border-color: #263b34;
+    }
+
+    .panel-title {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .panel-subtitle {
+      font-size: 11px;
+      color: #8a9893;
+      margin-top: 3px;
+    }
+
+    /* ================= FILTERS ================= */
+
+    .filters {
+      padding: 14px 18px;
+      border-bottom: 1px solid #e8eeeb;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    body.dark .filters {
+      border-color: #263b34;
+    }
+
+    .filter-input,
+    .select {
+      height: 38px;
+      border: 1px solid #dfe7e3;
+      background: #fafcfb;
+      border-radius: 9px;
+      padding: 0 12px;
+      color: inherit;
+      outline: none;
+      font-size: 12px;
+    }
+
+    body.dark .filter-input,
+    body.dark .select {
+      background: #162a23;
+      border-color: #2a4038;
+    }
+
+    .filter-input {
+      width: 240px;
+    }
+
+    .filter-input:focus,
+    .select:focus {
+      border-color: #399c7d;
+    }
+
+    .status-filter {
+      display: flex;
+      gap: 5px;
+      margin-left: auto;
+    }
+
+    .status-btn {
+      height: 34px;
+      padding: 0 11px;
+      border: 0;
+      background: transparent;
+      color: #788781;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: .2s ease;
+    }
+
+    .status-btn:hover {
+      background: #edf5f2;
+      color: #24765f;
+    }
+
+    .status-btn.active {
+      background: #dff1ea;
+      color: #17644e;
+      font-weight: 700;
+    }
+
+    body.dark .status-btn.active {
+      background: #21483b;
+      color: #81d9bb;
+    }
+
+    /* ================= TABLE ================= */
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th {
+      text-align: left;
+      padding: 13px 18px;
+      font-size: 10px;
+      color: #87958f;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      background: #fbfcfc;
+      white-space: nowrap;
+    }
+
+    body.dark th {
+      background: #0f201a;
+    }
+
+    td {
+      padding: 15px 18px;
+      border-top: 1px solid #edf1ef;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    body.dark td {
+      border-color: #22362f;
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+
+    tbody tr:hover {
+      background: #f4f9f7;
+    }
+
+    body.dark tbody tr:hover {
+      background: #172d25;
+    }
+
+    .rider-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rider-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #dceee8;
+      color: #17624f;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 750;
+      flex-shrink: 0;
+    }
+
+    .rider-name {
+      font-weight: 650;
+    }
+
+    .rider-id {
+      color: #8b9893;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .badge.available {
+      background: #e5f5ef;
+      color: #1b755b;
+    }
+
+    .badge.delivery {
+      background: #e6f0ff;
+      color: #3267ad;
+    }
+
+    .badge.risk {
+      background: #fff1dd;
+      color: #b86d0b;
+    }
+
+    .badge.offline {
+      background: #edf0ef;
+      color: #697570;
+    }
+
+    body.dark .badge.available {
+      background: #173d32;
+    }
+
+    body.dark .badge.delivery {
+      background: #1b3655;
+    }
+
+    body.dark .badge.risk {
+      background: #49351b;
+    }
+
+    .progress {
+      width: 85px;
+      height: 6px;
+      background: #e7eeeb;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    body.dark .progress {
+      background: #263a34;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #319979;
+      border-radius: inherit;
+      transition: width .6s ease;
+    }
+
+    .view-btn {
+      border: 0;
+      background: transparent;
+      color: #257d65;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .view-btn:hover {
+      text-decoration: underline;
+    }
+
+    /* ================= PAGINATION ================= */
+
+    .pagination {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #e8eeeb;
+    }
+
+    body.dark .pagination {
+      border-color: #263b34;
+    }
+
+    .page-info {
+      color: #82908b;
+      font-size: 11px;
+    }
+
+    .page-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .page-btn {
+      min-width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #dfe7e3;
+      background: white;
+      color: #465750;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    body.dark .page-btn {
+      background: #162a23;
+      border-color: #2a4038;
+      color: #d6e4df;
+    }
+
+    .page-btn.active {
+      background: #216c59;
+      color: white;
+      border-color: #216c59;
+    }
+
+    .page-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    /* ================= DRAWER ================= */
+
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4,15,11,.45);
+      backdrop-filter: blur(3px);
+      z-index: 80;
+      opacity: 0;
+      visibility: hidden;
+      transition: .3s ease;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .drawer {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: min(470px, 100%);
+      height: 100vh;
+      background: white;
+      z-index: 90;
+      transform: translateX(100%);
+      transition: transform .35s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+      box-shadow: -15px 0 40px rgba(0,0,0,.12);
+    }
+
+    body.dark .drawer {
+      background: #10221c;
+      color: #f3f7f5;
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5ebe8;
+      position: sticky;
+      top: 0;
+      background: inherit;
+      z-index: 2;
+    }
+
+    body.dark .drawer-header {
+      border-color: #283d35;
+    }
+
+    .close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      border: 1px solid #dfe7e3;
+      background: white;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    body.dark .close-btn {
+      background: #172b24;
+      border-color: #2a4038;
+      color: white;
+    }
+
+    .drawer-body {
+      padding: 22px;
+    }
+
+    .detail-profile {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-bottom: 22px;
+    }
+
+    .detail-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      background: #dcefe8;
+      color: #17624f;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 17px;
+    }
+
+    .detail-name {
+      font-size: 19px;
+      font-weight: 750;
+    }
+
+    .detail-id {
+      color: #8a9893;
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .detail-section {
+      margin-top: 22px;
+    }
+
+    .detail-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #87958f;
+      letter-spacing: .7px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .detail-card {
+      background: #f5f8f6;
+      border: 1px solid #e6ece9;
+      border-radius: 11px;
+      padding: 13px;
+    }
+
+    body.dark .detail-card {
+      background: #162a23;
+      border-color: #2a4038;
+    }
+
+    .detail-card span {
+      display: block;
+      color: #84918c;
+      font-size: 10px;
+      margin-bottom: 5px;
+    }
+
+    .detail-card strong {
+      font-size: 14px;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 25px;
+    }
+
+    .detail-actions button {
+      flex: 1;
+    }
+
+    /* ================= TOAST ================= */
+
+    .toast {
+      position: fixed;
+      right: 25px;
+      bottom: 25px;
+      background: #10231e;
+      color: white;
+      padding: 13px 17px;
+      border-radius: 11px;
+      font-size: 12px;
+      box-shadow: 0 15px 35px rgba(0,0,0,.2);
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .3s ease;
+      z-index: 200;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ================= MOBILE ================= */
+
+    .mobile-menu {
+      display: none;
+    }
+
+    @media(max-width: 1024px) {
+      #sidebar {
+        transform: translateX(-100%);
+      }
+
+      #sidebar.open {
+        transform: translateX(0);
+      }
+
+      #sidebarOverlay.show {
+        display: block;
+      }
+
+      .main {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .mobile-menu {
+        display: grid;
+      }
+    }
+
+    @media(max-width: 1100px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .status-filter {
+        margin-left: 0;
+        width: 100%;
+        overflow-x: auto;
+      }
+    }
+
+    @media(max-width: 800px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .mobile-menu {
+        display: grid;
+      }
+
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .search-box {
+        display: none;
+      }
+
+      .profile-info {
+        display: none;
+      }
+
+      .content {
+        padding: 22px 15px 35px;
+      }
+
+      .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .header-actions {
+        width: 100%;
+      }
+
+      .header-actions button {
+        flex: 1;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .stat-card {
+        padding: 14px;
+      }
+
+      .filter-input {
+        width: 100%;
+      }
+
+      .select {
+        flex: 1;
+      }
+    }
+
+    @media(max-width: 480px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .page-title {
+        font-size: 25px;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ================= THEME TRANSITION ================= */
+
+    .theme-transition {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      pointer-events: none;
+      background: #10231e;
+      clip-path: circle(0% at 100% 0%);
+      transition: clip-path .65s cubic-bezier(.77,0,.18,1);
+    }
+
+    .theme-transition.active {
+      clip-path: circle(150% at 100% 0%);
+    }
+  </style>
+  <link rel="stylesheet" href="app-sidebar.css">
+</head>
+
+<body>
+
+  <div class="theme-transition" id="themeTransition"></div>
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden"></div>
+
+  <div class="app">
+
+    <!-- ================ SIDEBAR ================ -->
+
+    <aside id="sidebar" class="fixed z-50 left-0 top-0 h-screen w-[245px] bg-[#13231e] text-white border-r border-white/5 transition-all duration-300">
+  <div class="h-full flex flex-col">
+    <div class="px-5 pt-5 pb-6"><div class="flex items-center gap-3"><img src="routeiq-logo.svg" alt="RouteIQ" class="h-10 w-auto object-contain"><div><div class="font-semibold tracking-tight text-lg">Route<span class="text-route-300">IQ</span></div><div class="text-[10px] text-white/45 uppercase tracking-widest">Operations</div></div></div></div>
+    <div class="px-6 text-[10px] text-white/35 uppercase tracking-[.18em] mb-2">Management</div>
+    <nav class="px-3 space-y-1">
+      <button data-nav="dashboard" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i><span>Dashboard</span></button>
+      <button data-nav="orders" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="package-search" class="w-[18px] h-[18px]"></i><span>Orders</span></button>
+      <button data-nav="riders" class="sidebar-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"><i data-lucide="bike" class="w-[18px] h-[18px]"></i><span>Riders</span></button>
+      <button data-nav="restaurants" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="store" class="w-[18px] h-[18px]"></i><span>Restaurants</span></button>
+      <button data-nav="live" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="radio-tower" class="w-[18px] h-[18px]"></i><span>Live Operations</span></button>
+      <button data-nav="analytics" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="chart-no-axes-combined" class="w-[18px] h-[18px]"></i><span>Analytics</span></button>
+      <button data-nav="reports" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="file-text" class="w-[18px] h-[18px]"></i><span>Reports</span></button>
+    </nav>
+    <div class="mx-5 my-5 border-t border-white/10"></div><div class="px-6 text-[10px] text-white/35 uppercase tracking-[.18em] mb-2">Settings</div>
+    <nav class="px-3 space-y-1"><button data-nav="profile" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="circle-user-round" class="w-[18px] h-[18px]"></i><span>Profile</span></button><button data-nav="notifications" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="bell" class="w-[18px] h-[18px]"></i><span>Notifications</span></button><button data-nav="settings" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="settings" class="w-[18px] h-[18px]"></i><span>Settings</span></button></nav>
+    <div class="mt-auto px-6 pb-6"><div class="h-px bg-white/10 mb-4"></div><div class="text-xs text-white/45">Smarter Deliveries</div><div class="text-sm text-white/75 font-medium">Better Operations</div></div>
+  </div>
+</aside>
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+      <!-- TOPBAR -->
+
+      <header class="topbar">
+
+        <div style="display:flex;align-items:center;gap:12px;">
+
+          <button class="icon-btn mobile-menu" id="mobileMenu">
+            ☰
+          </button>
+
+          <div class="search-box">
+            <span>⌕</span>
+            <input
+              id="globalSearch"
+              type="text"
+              placeholder="Search rider, order, restaurant or zone..."
+            />
+          </div>
+
+        </div>
+
+        <div class="top-actions">
+
+          <button class="icon-btn" id="notificationBtn" title="Notifications">
+            ♧
+          </button>
+
+          <button class="theme-btn" id="themeBtn" title="Toggle theme">
+            <span id="themeIcon">☼</span>
+          </button>
+
+          <div class="profile">
+            <div class="avatar">AS</div>
+
+            <div class="profile-info">
+              <strong>Anshika Singhroul</strong>
+              <span>Operations Manager</span>
+            </div>
+
+            <span>⌄</span>
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <!-- ================= CONTENT ================= -->
+
+      <section class="content">
+
+        <div class="breadcrumb">
+          Operations / Riders
+        </div>
+
+        <div class="page-header">
+
+          <div>
+            <h1 class="page-title">Riders</h1>
+
+            <p class="page-subtitle">
+              Monitor rider availability, performance and current delivery activity.
+            </p>
+          </div>
+
+          <div class="header-actions">
+
+            <button class="secondary-btn" id="refreshBtn">
+              ↻ Refresh
+            </button>
+
+            <button class="primary-btn" id="addRiderBtn">
+              + Add Rider
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================= STATS ================= -->
+
+        <div class="stats">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              <div class="stat-icon">♙</div>
+              <span class="badge available">LIVE</span>
+            </div>
+
+            <div class="stat-label">Total Riders</div>
+
+            <div class="stat-number" id="totalRiders">
+              0
+            </div>
+
+            <div class="stat-meta">
+              Fleet registered
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              <div class="stat-icon">✓</div>
+              <span class="badge available">READY</span>
+            </div>
+
+            <div class="stat-label">Available Riders</div>
+
+            <div class="stat-number" id="availableRiders">
+              0
+            </div>
+
+            <div class="stat-meta">
+              Ready for assignment
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              <div class="stat-icon">→</div>
+              <span class="badge delivery">ACTIVE</span>
+            </div>
+
+            <div class="stat-label">On Delivery</div>
+
+            <div class="stat-number" id="deliveryRiders">
+              0
+            </div>
+
+            <div class="stat-meta">
+              Currently on route
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              <div class="stat-icon">!</div>
+              <span class="badge risk">ATTENTION</span>
+            </div>
+
+            <div class="stat-label">At Risk</div>
+
+            <div class="stat-number" id="riskRiders">
+              0
+            </div>
+
+            <div class="stat-meta">
+              Need monitoring
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================= RIDER PANEL ================= -->
+
+        <div class="panel">
+
+          <div class="panel-header">
+
+            <div>
+              <div class="panel-title">
+                Rider Fleet
+              </div>
+
+              <div class="panel-subtitle">
+                Live rider availability and performance
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:#7e8d87;">
+              Updated just now
+            </div>
+
+          </div>
+
+
+          <!-- FILTERS -->
+
+          <div class="filters">
+
+            <input
+              class="filter-input"
+              id="searchInput"
+              type="text"
+              placeholder="Search rider, ID or order..."
+            />
+
+            <select class="select" id="zoneFilter">
+              <option value="all">All Zones</option>
+              <option value="Civil Lines">Civil Lines</option>
+              <option value="Wright Town">Wright Town</option>
+              <option value="Napier Town">Napier Town</option>
+              <option value="Vijay Nagar">Vijay Nagar</option>
+              <option value="Gorakhpur">Gorakhpur</option>
+            </select>
+
+            <select class="select" id="vehicleFilter">
+              <option value="all">All Vehicles</option>
+              <option value="Bike">Bike</option>
+              <option value="Scooter">Scooter</option>
+              <option value="EV">EV</option>
+            </select>
+
+            <div class="status-filter">
+
+              <button class="status-btn active" data-status="All">
+                All
+              </button>
+
+              <button class="status-btn" data-status="On Delivery">
+                On Delivery
+              </button>
+
+              <button class="status-btn" data-status="Available">
+                Available
+              </button>
+
+              <button class="status-btn" data-status="At Risk">
+                At Risk
+              </button>
+
+              <button class="status-btn" data-status="Offline">
+                Offline
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- TABLE -->
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+
+                <tr>
+                  <th>Rider</th>
+                  <th>Status</th>
+                  <th>Current Order</th>
+                  <th>Zone</th>
+                  <th>Deliveries</th>
+                  <th>Utilization</th>
+                  <th>On-Time Rate</th>
+                  <th></th>
+                </tr>
+
+              </thead>
+
+              <tbody id="riderTable"></tbody>
+
+            </table>
+
+          </div>
+
+
+          <!-- PAGINATION -->
+
+          <div class="pagination">
+
+            <div class="page-info" id="pageInfo">
+              Showing 1–10 of 0 riders
+            </div>
+
+            <div class="page-buttons" id="pagination"></div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- ================= DRAWER ================= -->
+
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <aside class="drawer" id="drawer">
+
+    <div class="drawer-header">
+
+      <div>
+        <div style="font-size:11px;color:#379878;font-weight:700;">
+          RIDER PROFILE
+        </div>
+
+        <div style="font-size:17px;font-weight:750;">
+          Rider Details
+        </div>
+      </div>
+
+      <button class="close-btn" id="closeDrawer">
+        ×
+      </button>
+
+    </div>
+
+    <div class="drawer-body" id="drawerBody"></div>
+
+  </aside>
+
+
+  <!-- ================= TOAST ================= -->
+
+  <div class="toast" id="toast"></div>
+
+
+  <script>
+
+    lucide.createIcons();
+
+    /* =====================================================
+       ROUTEIQ RIDER DATA
+    ===================================================== */
+
+    const riders = [
+      {
+        id: "R-101",
+        name: "Rahul Sharma",
+        status: "On Delivery",
+        order: "ORD-1024",
+        zone: "Civil Lines",
+        vehicle: "Bike",
+        deliveries: 18,
+        utilization: 91,
+        onTime: 94,
+        avgTime: 27,
+        phone: "+91 98XXXX1024"
+      },
+      {
+        id: "R-102",
+        name: "Sneha Yadav",
+        status: "Available",
+        order: null,
+        zone: "Wright Town",
+        vehicle: "Scooter",
+        deliveries: 16,
+        utilization: 76,
+        onTime: 96,
+        avgTime: 24,
+        phone: "+91 97XXXX2104"
+      },
+      {
+        id: "R-103",
+        name: "Aman Verma",
+        status: "On Delivery",
+        order: "ORD-1048",
+        zone: "Napier Town",
+        vehicle: "Bike",
+        deliveries: 20,
+        utilization: 88,
+        onTime: 91,
+        avgTime: 29,
+        phone: "+91 96XXXX3087"
+      },
+      {
+        id: "R-104",
+        name: "Pooja Singh",
+        status: "On Delivery",
+        order: "ORD-1056",
+        zone: "Vijay Nagar",
+        vehicle: "EV",
+        deliveries: 17,
+        utilization: 82,
+        onTime: 95,
+        avgTime: 25,
+        phone: "+91 95XXXX4123"
+      },
+      {
+        id: "R-105",
+        name: "Karan Mehta",
+        status: "Available",
+        order: null,
+        zone: "Wright Town",
+        vehicle: "Bike",
+        deliveries: 14,
+        utilization: 71,
+        onTime: 97,
+        avgTime: 23,
+        phone: "+91 94XXXX5198"
+      },
+      {
+        id: "R-106",
+        name: "Riya Verma",
+        status: "Offline",
+        order: null,
+        zone: "Civil Lines",
+        vehicle: "Scooter",
+        deliveries: 11,
+        utilization: 58,
+        onTime: 93,
+        avgTime: 28,
+        phone: "+91 93XXXX6211"
+      },
+      {
+        id: "R-107",
+        name: "Sahil Khan",
+        status: "At Risk",
+        order: "ORD-1071",
+        zone: "Gorakhpur",
+        vehicle: "Bike",
+        deliveries: 21,
+        utilization: 96,
+        onTime: 86,
+        avgTime: 34,
+        phone: "+91 92XXXX7342"
+      },
+      {
+        id: "R-108",
+        name: "Neha Patel",
+        status: "Available",
+        order: null,
+        zone: "Vijay Nagar",
+        vehicle: "EV",
+        deliveries: 13,
+        utilization: 69,
+        onTime: 98,
+        avgTime: 22,
+        phone: "+91 91XXXX8456"
+      },
+      {
+        id: "R-109",
+        name: "Arjun Das",
+        status: "On Delivery",
+        order: "ORD-1083",
+        zone: "Napier Town",
+        vehicle: "Bike",
+        deliveries: 19,
+        utilization: 89,
+        onTime: 92,
+        avgTime: 26,
+        phone: "+91 90XXXX9578"
+      },
+      {
+        id: "R-110",
+        name: "Meera Joshi",
+        status: "Available",
+        order: null,
+        zone: "Civil Lines",
+        vehicle: "Scooter",
+        deliveries: 12,
+        utilization: 64,
+        onTime: 97,
+        avgTime: 24,
+        phone: "+91 89XXXX1632"
+      },
+      {
+        id: "R-111",
+        name: "Vikas Rao",
+        status: "On Delivery",
+        order: "ORD-1091",
+        zone: "Wright Town",
+        vehicle: "Bike",
+        deliveries: 22,
+        utilization: 93,
+        onTime: 90,
+        avgTime: 30,
+        phone: "+91 88XXXX2745"
+      },
+      {
+        id: "R-112",
+        name: "Anjali Mishra",
+        status: "At Risk",
+        order: "ORD-1102",
+        zone: "Gorakhpur",
+        vehicle: "EV",
+        deliveries: 18,
+        utilization: 94,
+        onTime: 88,
+        avgTime: 32,
+        phone: "+91 87XXXX3861"
+      },
+      {
+        id: "R-113",
+        name: "Mohit Jain",
+        status: "Available",
+        order: null,
+        zone: "Napier Town",
+        vehicle: "Bike",
+        deliveries: 15,
+        utilization: 72,
+        onTime: 96,
+        avgTime: 25,
+        phone: "+91 86XXXX4972"
+      },
+      {
+        id: "R-114",
+        name: "Priya Nair",
+        status: "On Delivery",
+        order: "ORD-1117",
+        zone: "Vijay Nagar",
+        vehicle: "Scooter",
+        deliveries: 17,
+        utilization: 84,
+        onTime: 94,
+        avgTime: 27,
+        phone: "+91 85XXXX5084"
+      },
+      {
+        id: "R-115",
+        name: "Rohit Soni",
+        status: "Offline",
+        order: null,
+        zone: "Civil Lines",
+        vehicle: "Bike",
+        deliveries: 10,
+        utilization: 51,
+        onTime: 92,
+        avgTime: 29,
+        phone: "+91 84XXXX6193"
+      },
+      {
+        id: "R-116",
+        name: "Kavya Sharma",
+        status: "Available",
+        order: null,
+        zone: "Wright Town",
+        vehicle: "EV",
+        deliveries: 14,
+        utilization: 67,
+        onTime: 98,
+        avgTime: 23,
+        phone: "+91 83XXXX7204"
+      }
+    ];
+
+
+    /* =====================================================
+       STATE
+    ===================================================== */
+
+    let currentStatus = "All";
+    let currentPage = 1;
+    const perPage = 8;
+
+
+    /* =====================================================
+       ELEMENTS
+    ===================================================== */
+
+    const table = document.getElementById("riderTable");
+    const pagination = document.getElementById("pagination");
+    const pageInfo = document.getElementById("pageInfo");
+
+    const searchInput = document.getElementById("searchInput");
+    const globalSearch = document.getElementById("globalSearch");
+
+    const zoneFilter = document.getElementById("zoneFilter");
+    const vehicleFilter = document.getElementById("vehicleFilter");
+
+    const drawer = document.getElementById("drawer");
+    const drawerOverlay = document.getElementById("drawerOverlay");
+    const drawerBody = document.getElementById("drawerBody");
+
+
+    /* =====================================================
+       HELPERS
+    ===================================================== */
+
+    function initials(name) {
+      return name
+        .split(" ")
+        .map(word => word[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+    }
+
+
+    function statusClass(status) {
+
+      if (status === "Available") return "available";
+      if (status === "On Delivery") return "delivery";
+      if (status === "At Risk") return "risk";
+
+      return "offline";
+    }
+
+
+    function showToast(message) {
+
+      const toast = document.getElementById("toast");
+
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2200);
+    }
+
+
+    /* =====================================================
+       STATS
+    ===================================================== */
+
+    function updateStats() {
+
+      document.getElementById("totalRiders").textContent =
+        riders.length;
+
+      document.getElementById("availableRiders").textContent =
+        riders.filter(r => r.status === "Available").length;
+
+      document.getElementById("deliveryRiders").textContent =
+        riders.filter(r => r.status === "On Delivery").length;
+
+      document.getElementById("riskRiders").textContent =
+        riders.filter(r => r.status === "At Risk").length;
+    }
+
+
+    /* =====================================================
+       FILTER DATA
+    ===================================================== */
+
+    function getFilteredRiders() {
+
+      const search =
+        searchInput.value.trim().toLowerCase();
+
+      const zone =
+        zoneFilter.value;
+
+      const vehicle =
+        vehicleFilter.value;
+
+      return riders.filter(rider => {
+
+        const matchesSearch =
+          !search ||
+          rider.name.toLowerCase().includes(search) ||
+          rider.id.toLowerCase().includes(search) ||
+          (rider.order &&
+            rider.order.toLowerCase().includes(search)) ||
+          rider.zone.toLowerCase().includes(search);
+
+        const matchesStatus =
+          currentStatus === "All" ||
+          rider.status === currentStatus;
+
+        const matchesZone =
+          zone === "all" ||
+          rider.zone === zone;
+
+        const matchesVehicle =
+          vehicle === "all" ||
+          rider.vehicle === vehicle;
+
+        return (
+          matchesSearch &&
+          matchesStatus &&
+          matchesZone &&
+          matchesVehicle
+        );
+      });
+    }
+
+
+    /* =====================================================
+       RENDER TABLE
+    ===================================================== */
+
+    function renderTable() {
+
+      const filtered = getFilteredRiders();
+
+      const totalPages =
+        Math.max(1, Math.ceil(filtered.length / perPage));
+
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+      }
+
+      const start =
+        (currentPage - 1) * perPage;
+
+      const end =
+        start + perPage;
+
+      const visible =
+        filtered.slice(start, end);
+
+      table.innerHTML = "";
+
+      if (visible.length === 0) {
+
+        table.innerHTML = `
+          <tr>
+            <td colspan="8" style="
+              text-align:center;
+              padding:45px;
+              color:#87958f;
+            ">
+              No riders found matching your filters.
+            </td>
+          </tr>
+        `;
+
+      } else {
+
+        visible.forEach(rider => {
+
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+
+            <td>
+
+              <div class="rider-cell">
+
+                <div class="rider-avatar">
+                  ${initials(rider.name)}
+                </div>
+
+                <div>
+                  <div class="rider-name">
+                    ${rider.name}
+                  </div>
+
+                  <div class="rider-id">
+                    ${rider.id} · ${rider.vehicle}
+                  </div>
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <span class="badge ${statusClass(rider.status)}">
+
+                <span>
+                  ${rider.status === "Available" ? "●" :
+                    rider.status === "On Delivery" ? "●" :
+                    rider.status === "At Risk" ? "●" : "●"}
+                </span>
+
+                ${rider.status}
+
+              </span>
+
+            </td>
+
+
+            <td>
+
+              ${
+                rider.order
+                ? `<strong>${rider.order}</strong>`
+                : `<span style="color:#899690;">No active order</span>`
+              }
+
+            </td>
+
+
+            <td>
+              ${rider.zone}
+            </td>
+
+
+            <td>
+              <strong>${rider.deliveries}</strong>
+            </td>
+
+
+            <td>
+
+              <div style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+              ">
+
+                <div class="progress">
+                  <div
+                    class="progress-bar"
+                    style="width:${rider.utilization}%">
+                  </div>
+                </div>
+
+                <span>
+                  ${rider.utilization}%
+                </span>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <span style="
+                color:${rider.onTime >= 94
+                  ? "#238064"
+                  : rider.onTime >= 90
+                  ? "#b37820"
+                  : "#d54b4b"};
+                font-weight:700;
+              ">
+                ${rider.onTime}%
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <button
+                class="view-btn"
+                data-id="${rider.id}"
+              >
+                View →
+              </button>
+
+            </td>
+          `;
+
+
+          row.addEventListener("click", event => {
+
+            if (event.target.closest(".view-btn")) {
+              openDrawer(rider.id);
+              return;
+            }
+
+            openDrawer(rider.id);
+
+          });
+
+
+          table.appendChild(row);
+
+        });
+      }
+
+      renderPagination(filtered.length, totalPages);
+
+      pageInfo.textContent =
+        filtered.length === 0
+        ? "Showing 0 riders"
+        : `Showing ${start + 1}–${Math.min(end, filtered.length)} of ${filtered.length} riders`;
+    }
+
+
+    /* =====================================================
+       PAGINATION
+    ===================================================== */
+
+    function renderPagination(total, totalPages) {
+
+      pagination.innerHTML = "";
+
+      const previous = document.createElement("button");
+
+      previous.className = "page-btn";
+      previous.textContent = "‹";
+      previous.disabled = currentPage === 1;
+
+      previous.onclick = () => {
+
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+
+      };
+
+      pagination.appendChild(previous);
+
+
+      for (let i = 1; i <= totalPages; i++) {
+
+        const button = document.createElement("button");
+
+        button.className =
+          `page-btn ${i === currentPage ? "active" : ""}`;
+
+        button.textContent = i;
+
+        button.onclick = () => {
+
+          currentPage = i;
+          renderTable();
+
+        };
+
+        pagination.appendChild(button);
+      }
+
+
+      const next = document.createElement("button");
+
+      next.className = "page-btn";
+      next.textContent = "›";
+      next.disabled = currentPage === totalPages;
+
+      next.onclick = () => {
+
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+        }
+
+      };
+
+      pagination.appendChild(next);
+    }
+
+
+    /* =====================================================
+       DRAWER
+    ===================================================== */
+
+    function openDrawer(id) {
+
+      const rider =
+        riders.find(r => r.id === id);
+
+      if (!rider) return;
+
+
+      drawerBody.innerHTML = `
+
+        <div class="detail-profile">
+
+          <div class="detail-avatar">
+            ${initials(rider.name)}
+          </div>
+
+          <div>
+
+            <div class="detail-name">
+              ${rider.name}
+            </div>
+
+            <div class="detail-id">
+              ${rider.id} · ${rider.vehicle}
+            </div>
+
+            <div style="margin-top:7px;">
+              <span class="badge ${statusClass(rider.status)}">
+                ${rider.status}
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-section">
+
+          <div class="detail-section-title">
+            Current Assignment
+          </div>
+
+          <div class="detail-grid">
+
+            <div class="detail-card">
+              <span>Current Order</span>
+              <strong>
+                ${rider.order || "No active order"}
+              </strong>
+            </div>
+
+            <div class="detail-card">
+              <span>Current Zone</span>
+              <strong>
+                ${rider.zone}
+              </strong>
+            </div>
+
+            <div class="detail-card">
+              <span>Vehicle</span>
+              <strong>
+                ${rider.vehicle}
+              </strong>
+            </div>
+
+            <div class="detail-card">
+              <span>Contact</span>
+              <strong>
+                ${rider.phone}
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-section">
+
+          <div class="detail-section-title">
+            Performance
+          </div>
+
+          <div class="detail-grid">
+
+            <div class="detail-card">
+              <span>Total Deliveries</span>
+              <strong>${rider.deliveries}</strong>
+            </div>
+
+            <div class="detail-card">
+              <span>Utilization</span>
+              <strong>${rider.utilization}%</strong>
+            </div>
+
+            <div class="detail-card">
+              <span>On-Time Rate</span>
+              <strong>${rider.onTime}%</strong>
+            </div>
+
+            <div class="detail-card">
+              <span>Avg Delivery Time</span>
+              <strong>${rider.avgTime} min</strong>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-section">
+
+          <div class="detail-section-title">
+            Today's Activity
+          </div>
+
+          <div style="
+            background:#eaf5f0;
+            border-radius:12px;
+            padding:15px;
+          ">
+
+            <div style="
+              display:flex;
+              justify-content:space-between;
+              font-size:12px;
+            ">
+
+              <span>
+                Daily utilization
+              </span>
+
+              <strong>
+                ${rider.utilization}%
+              </strong>
+
+            </div>
+
+            <div class="progress"
+              style="width:100%;margin-top:10px;">
+
+              <div
+                class="progress-bar"
+                style="width:${rider.utilization}%">
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-actions">
+
+          <button
+            class="secondary-btn"
+            id="locationBtn"
+          >
+            ◉ Live Location
+          </button>
+
+          <button
+            class="primary-btn"
+            id="orderBtn"
+          >
+            View Order
+          </button>
+
+        </div>
+      `;
+
+
+      drawer.classList.add("open");
+      drawerOverlay.classList.add("open");
+
+
+      document.getElementById("locationBtn")
+        .addEventListener("click", () => {
+
+          closeDrawer();
+
+          window.location.href =
+            "liveoperations.html";
+
+        });
+
+
+      document.getElementById("orderBtn")
+        .addEventListener("click", () => {
+
+          closeDrawer();
+
+          window.location.href =
+            "orders.html";
+
+        });
+
+    }
+
+
+    function closeDrawer() {
+
+      drawer.classList.remove("open");
+      drawerOverlay.classList.remove("open");
+
+    }
+
+
+    document
+      .getElementById("closeDrawer")
+      .addEventListener("click", closeDrawer);
+
+    drawerOverlay
+      .addEventListener("click", closeDrawer);
+
+
+    /* =====================================================
+       STATUS FILTERS
+    ===================================================== */
+
+    document
+      .querySelectorAll(".status-btn")
+      .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          document
+            .querySelectorAll(".status-btn")
+            .forEach(btn =>
+              btn.classList.remove("active")
+            );
+
+          button.classList.add("active");
+
+          currentStatus =
+            button.dataset.status;
+
+          currentPage = 1;
+
+          renderTable();
+
+        });
+
+      });
+
+
+    /* =====================================================
+       SEARCH + FILTERS
+    ===================================================== */
+
+    searchInput.addEventListener("input", () => {
+
+      currentPage = 1;
+      renderTable();
+
+    });
+
+
+    globalSearch.addEventListener("input", () => {
+
+      searchInput.value =
+        globalSearch.value;
+
+      currentPage = 1;
+
+      renderTable();
+
+    });
+
+
+    zoneFilter.addEventListener("change", () => {
+
+      currentPage = 1;
+      renderTable();
+
+    });
+
+
+    vehicleFilter.addEventListener("change", () => {
+
+      currentPage = 1;
+      renderTable();
+
+    });
+
+
+    /* =====================================================
+       REFRESH
+    ===================================================== */
+
+    document
+      .getElementById("refreshBtn")
+      .addEventListener("click", function() {
+
+        const button = this;
+
+        button.disabled = true;
+        button.textContent = "↻ Refreshing...";
+
+        setTimeout(() => {
+
+          button.disabled = false;
+          button.textContent = "↻ Refresh";
+
+          renderTable();
+
+          showToast(
+            "Rider data refreshed successfully"
+          );
+
+        }, 700);
+
+      });
+
+
+    /* =====================================================
+       ADD RIDER
+    ===================================================== */
+
+    document
+      .getElementById("addRiderBtn")
+      .addEventListener("click", () => {
+
+        showToast(
+          "Rider onboarding module will be connected next."
+        );
+
+      });
+
+
+    /* =====================================================
+       NOTIFICATION
+    ===================================================== */
+
+    document
+      .getElementById("notificationBtn")
+      .addEventListener("click", () => {
+
+        showToast(
+          "3 rider alerts require attention."
+        );
+
+      });
+
+
+    /* =====================================================
+       DARK / LIGHT MODE
+    ===================================================== */
+
+    const themeBtn =
+      document.getElementById("themeBtn");
+
+    const themeIcon =
+      document.getElementById("themeIcon");
+
+    const themeTransition =
+      document.getElementById("themeTransition");
+
+
+    function applyTheme(theme) {
+
+      if (theme === "dark") {
+
+        document.body.classList.add("dark");
+        themeIcon.textContent = "☾";
+
+      } else {
+
+        document.body.classList.remove("dark");
+        themeIcon.textContent = "☼";
+
+      }
+
+    }
+
+
+    const savedTheme =
+      localStorage.getItem("routeiq-theme") ||
+      "light";
+
+    applyTheme(savedTheme);
+
+
+    themeBtn.addEventListener("click", () => {
+
+      const newTheme =
+        document.body.classList.contains("dark")
+        ? "light"
+        : "dark";
+
+
+      themeTransition.classList.add("active");
+
+
+      setTimeout(() => {
+
+        applyTheme(newTheme);
+
+        localStorage.setItem(
+          "routeiq-theme",
+          newTheme
+        );
+
+      }, 250);
+
+
+      setTimeout(() => {
+
+        themeTransition.classList.remove("active");
+
+      }, 700);
+
+    });
+
+
+    /* =====================================================
+       MOBILE MENU
+    ===================================================== */
+
+    const mobileMenu =
+      document.getElementById("mobileMenu");
+
+    const sidebarOverlay =
+      document.getElementById("sidebarOverlay");
+
+    function closeSidebar() {
+      document.getElementById("sidebar").classList.remove("open");
+      sidebarOverlay.classList.remove("show");
+      sidebarOverlay.classList.add("hidden");
+    }
+
+    mobileMenu.addEventListener("click", () => {
+
+      document
+        .getElementById("sidebar")
+        .classList.add("open");
+      sidebarOverlay.classList.remove("hidden");
+      sidebarOverlay.classList.add("show");
+
+    });
+
+    sidebarOverlay.addEventListener("click", closeSidebar);
+
+    document.querySelectorAll(".sidebar-item").forEach(button => {
+      button.addEventListener("click", () => {
+        const routes = {
+          dashboard: "dashboard.html",
+          orders: "orders.html",
+          live: "liveoperations.html",
+          riders: "riders.html"
+        };
+        const route = routes[button.dataset.nav];
+
+        if (route) {
+          window.location.href = route;
+          return;
+        }
+
+        showToast(`${button.textContent.trim()} is not available yet.`);
+        closeSidebar();
+      });
+    });
+
+
+    /* =====================================================
+       INITIAL LOAD
+    ===================================================== */
+
+    updateStats();
+    renderTable();
+
+  </script>
+
+  <script src="app-sidebar.js"></script>
+</body>
+</html>

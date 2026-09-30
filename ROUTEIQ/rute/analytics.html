@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RouteIQ — Analytics</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class"
+        };
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+                BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+            transition:
+                background-color 0.45s ease,
+                color 0.45s ease;
+        }
+
+        .theme-transition,
+        .theme-transition *,
+        .theme-transition *::before,
+        .theme-transition *::after {
+            transition:
+                background-color 0.45s ease,
+                border-color 0.45s ease,
+                color 0.35s ease,
+                box-shadow 0.45s ease,
+                opacity 0.35s ease;
+        }
+
+        .glass {
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        .chart-line {
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chart-grid {
+            stroke-width: 1;
+            opacity: 0.45;
+        }
+
+        .bar {
+            transition:
+                height 0.55s cubic-bezier(.2,.8,.2,1),
+                opacity 0.25s ease,
+                transform 0.25s ease;
+        }
+
+        .bar:hover {
+            opacity: 0.78;
+            transform: translateY(-3px);
+        }
+
+        .nav-item {
+            transition:
+                background-color 0.25s ease,
+                color 0.25s ease,
+                transform 0.2s ease;
+        }
+
+        .nav-item:hover {
+            transform: translateX(2px);
+        }
+
+        .card {
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.3s ease,
+                border-color 0.3s ease,
+                background-color 0.35s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .toast {
+            animation: toastIn 0.35s ease forwards;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-up {
+            animation: fadeUp 0.5s ease both;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 999px;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 80px !important;
+            }
+
+            .sidebar-text {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 80px !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+
+            .mobile-header {
+                display: flex !important;
+            }
+        }
+
+        .mobile-header {
+            display: none;
+        }
+    </style>
+    <link rel="stylesheet" href="../app-sidebar.css">
+</head>
+
+
+<body class="bg-[#f6f8f7] text-slate-900 dark:bg-[#081512] dark:text-slate-100">
+
+<!-- =========================================================
+     MOBILE HEADER
+========================================================= -->
+
+<header
+    class="mobile-header fixed top-0 left-0 right-0 z-50 h-[68px]
+           items-center justify-between px-4
+           bg-white/95 dark:bg-[#0d211c]/95
+           border-b border-slate-200 dark:border-white/10 glass"
+>
+
+    <div class="flex items-center gap-3">
+
+        <img
+            src="../routeiq-logo.svg"
+            alt="RouteIQ"
+            class="h-9 w-auto object-contain"
+        >
+
+        <div>
+            <div class="font-semibold text-[15px]">RouteIQ</div>
+            <div class="text-[9px] tracking-[0.18em] text-slate-400">
+                OPERATIONS
+            </div>
+        </div>
+
+    </div>
+
+    <button
+        id="mobileThemeButton"
+        class="w-10 h-10 rounded-xl
+               bg-slate-100 dark:bg-white/10
+               flex items-center justify-center"
+        aria-label="Toggle theme"
+    >
+        ☼
+    </button>
+
+</header>
+
+
+<!-- =========================================================
+     SIDEBAR
+========================================================= -->
+
+<aside
+    class="sidebar fixed left-0 top-0 z-40 h-screen w-[322px]
+           bg-[#0b211b] text-white
+           border-r border-white/5
+           flex flex-col"
+>
+
+    <!-- LOGO -->
+
+    <div class="h-[104px] px-7 flex items-center">
+
+        <a
+            href="dashboard.html"
+            class="flex items-center gap-4"
+        >
+
+            <img
+                src="../routeiq-logo.svg"
+                alt="RouteIQ"
+                class="h-[54px] w-auto object-contain"
+            >
+
+            <div class="sidebar-text">
+
+                <div class="text-[24px] font-semibold tracking-tight">
+                    RouteIQ
+                </div>
+
+                <div
+                    class="text-[12px] tracking-[0.18em]
+                           text-[#9db6ad]"
+                >
+                    OPERATIONS
+                </div>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+    <!-- MAIN NAVIGATION -->
+
+    <nav class="px-3 space-y-1">
+
+        <a
+            href="dashboard.html"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[21px]">▦</span>
+            <span class="sidebar-text text-[17px]">Dashboard</span>
+        </a>
+
+
+        <a
+            href="orders.html"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[20px]">◈</span>
+            <span class="sidebar-text text-[17px]">Orders</span>
+        </a>
+
+
+        <a
+            href="riders.html"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[20px]">♧</span>
+            <span class="sidebar-text text-[17px]">Riders</span>
+        </a>
+
+
+        <a
+            href="restaurant.html"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[20px]">⌂</span>
+            <span class="sidebar-text text-[17px]">Restaurants</span>
+        </a>
+
+
+        <a
+            href="liveoperations.html"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[20px]">⌁</span>
+            <span class="sidebar-text text-[17px]">Live Operations</span>
+        </a>
+
+
+        <!-- ACTIVE -->
+
+        <a
+            href="analytics.html"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   bg-[#276b58]
+                   text-white
+                   shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]"
+        >
+            <span class="text-[20px]">⌁</span>
+            <span class="sidebar-text text-[17px] font-medium">
+                Analytics
+            </span>
+        </a>
+
+
+        <a
+            href="alerts.html"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[20px]">♧</span>
+            <span class="sidebar-text text-[17px]">Alerts</span>
+        </a>
+
+    </nav>
+
+
+    <!-- DIVIDER -->
+
+    <div class="mx-6 my-5 border-t border-white/10"></div>
+
+
+    <!-- SETTINGS -->
+
+    <div class="px-3 space-y-1">
+
+        <div
+            class="px-4 pb-3 text-[11px]
+                   uppercase tracking-[0.18em]
+                   text-[#708b82] sidebar-text"
+        >
+            Settings
+        </div>
+
+
+        <a
+            href="#"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[20px]">◎</span>
+            <span class="sidebar-text text-[17px]">Profile</span>
+        </a>
+
+
+        <a
+            href="#"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[20px]">♧</span>
+            <span class="sidebar-text text-[17px]">Notifications</span>
+        </a>
+
+
+        <a
+            href="#"
+            class="nav-item flex items-center gap-4
+                   rounded-xl px-4 py-4
+                   text-[#b8c9c3] hover:bg-white/5 hover:text-white"
+        >
+            <span class="text-[20px]">⚙</span>
+            <span class="sidebar-text text-[17px]">Settings</span>
+        </a>
+
+    </div>
+
+
+    <!-- BOTTOM -->
+
+    <div class="mt-auto px-7 py-7">
+
+        <div
+            class="sidebar-text text-[12px]
+                   text-[#6f8981] mb-1"
+        >
+            Smarter Deliveries
+        </div>
+
+        <div
+            class="sidebar-text text-[16px]
+                   font-medium text-white"
+        >
+            Better Operations
+        </div>
+
+    </div>
+
+</aside>
+
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main
+    class="main-content ml-[322px] min-h-screen"
+>
+
+
+<!-- =========================================================
+     TOP BAR
+========================================================= -->
+
+<header
+    class="h-[84px]
+           bg-white/90 dark:bg-[#0d211c]/90
+           border-b border-slate-200 dark:border-white/10
+           flex items-center justify-between
+           px-8 sticky top-0 z-30 glass"
+>
+
+    <!-- SEARCH -->
+
+    <div
+        class="w-[670px] max-w-[52vw]
+               h-[52px]
+               rounded-2xl
+               border border-slate-200
+               dark:border-white/10
+               bg-white dark:bg-[#112720]
+               flex items-center px-5 gap-3
+               shadow-sm"
+    >
+
+        <span class="text-slate-400 text-xl">⌕</span>
+
+        <input
+            type="text"
+            placeholder="Search orders, restaurant, rider, or order ID..."
+            class="flex-1 outline-none
+                   bg-transparent
+                   text-[16px]
+                   text-slate-800 dark:text-slate-100
+                   placeholder:text-slate-400"
+        >
+
+        <span
+            class="hidden sm:block
+                   px-2 py-1
+                   rounded-md
+                   border border-slate-200
+                   dark:border-white/10
+                   text-xs text-slate-400"
+        >
+            ⌘ K
+        </span>
+
+    </div>
+
+
+    <!-- RIGHT -->
+
+    <div class="flex items-center gap-5">
+
+        <button
+            id="notificationButton"
+            class="relative w-11 h-11 rounded-full
+                   hover:bg-slate-100
+                   dark:hover:bg-white/10
+                   transition"
+        >
+
+            <span class="text-[23px]">♧</span>
+
+            <span
+                class="absolute top-2 right-2
+                       w-2 h-2 rounded-full
+                       bg-red-500"
+            ></span>
+
+        </button>
+
+
+        <!-- THEME -->
+
+        <div
+            class="hidden sm:flex items-center
+                   p-1 rounded-full
+                   bg-slate-100 dark:bg-[#162d26]
+                   border border-slate-200
+                   dark:border-white/10"
+        >
+
+            <button
+                id="lightTheme"
+                class="theme-control
+                       w-10 h-10 rounded-full
+                       flex items-center justify-center
+                       text-lg"
+                aria-label="Light mode"
+            >
+                ☼
+            </button>
+
+            <button
+                id="darkTheme"
+                class="theme-control
+                       w-10 h-10 rounded-full
+                       flex items-center justify-center
+                       text-lg"
+                aria-label="Dark mode"
+            >
+                ☾
+            </button>
+
+        </div>
+
+
+        <!-- PROFILE -->
+
+        <div
+            class="hidden sm:flex items-center gap-3
+                   pl-5 border-l
+                   border-slate-200
+                   dark:border-white/10"
+        >
+
+            <div
+                class="w-11 h-11 rounded-full
+                       bg-[#245c4c]
+                       text-white
+                       flex items-center justify-center
+                       font-semibold"
+            >
+                AS
+            </div>
+
+            <div>
+
+                <div class="font-semibold text-sm">
+                    Anshika Singhroul
+                </div>
+
+                <div
+                    class="text-[11px]
+                           text-slate-400"
+                >
+                    Operations Manager
+                </div>
+
+            </div>
+
+            <span class="text-slate-400">⌄</span>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================================================
+     CONTENT
+========================================================= -->
+
+<section class="px-8 py-8 max-w-[1600px] mx-auto">
+
+
+    <!-- BREADCRUMB -->
+
+    <div
+        class="flex items-center gap-2
+               text-sm text-[#27705b]
+               dark:text-[#67b99d]
+               mb-2"
+    >
+
+        <span>⌁</span>
+
+        <span>Operations</span>
+
+        <span>/</span>
+
+        <span>Analytics</span>
+
+    </div>
+
+
+    <!-- TITLE -->
+
+    <div
+        class="flex flex-col lg:flex-row
+               lg:items-end
+               justify-between
+               gap-5 mb-7"
+    >
+
+        <div>
+
+            <h1
+                class="text-[42px] leading-tight
+                       font-semibold tracking-[-0.035em]"
+            >
+                Analytics
+            </h1>
+
+            <p
+                class="mt-2
+                       text-[17px]
+                       text-slate-500
+                       dark:text-slate-400"
+            >
+                Understand delivery performance, rider utilization and
+                operational trends.
+            </p>
+
+        </div>
+
+
+        <div class="flex items-center gap-3">
+
+            <!-- RANGE -->
+
+            <div
+                class="flex items-center
+                       bg-white dark:bg-[#10241e]
+                       border border-slate-200
+                       dark:border-white/10
+                       rounded-xl p-1
+                       shadow-sm"
+            >
+
+                <button
+                    class="range-btn active-range
+                           px-4 py-2.5
+                           rounded-lg text-sm font-medium"
+                    data-range="today"
+                >
+                    Today
+                </button>
+
+                <button
+                    class="range-btn
+                           px-4 py-2.5
+                           rounded-lg text-sm font-medium
+                           text-slate-500 dark:text-slate-400"
+                    data-range="7"
+                >
+                    7 Days
+                </button>
+
+                <button
+                    class="range-btn
+                           px-4 py-2.5
+                           rounded-lg text-sm font-medium
+                           text-slate-500 dark:text-slate-400"
+                    data-range="30"
+                >
+                    30 Days
+                </button>
+
+            </div>
+
+
+            <!-- REFRESH -->
+
+            <button
+                id="refreshButton"
+                class="h-[46px]
+                       px-5 rounded-xl
+                       bg-[#276b58]
+                       hover:bg-[#205b4b]
+                       text-white
+                       font-medium
+                       flex items-center gap-2
+                       transition
+                       active:scale-95"
+            >
+
+                <span id="refreshIcon">↻</span>
+
+                <span>Refresh</span>
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         KPI CARDS
+    ====================================================== -->
+
+    <div
+        class="grid grid-cols-1
+               sm:grid-cols-2
+               xl:grid-cols-4
+               gap-5 mb-6"
+    >
+
+        <!-- TOTAL DELIVERIES -->
+
+        <div
+            class="card
+                   bg-white dark:bg-[#10241e]
+                   border border-slate-200
+                   dark:border-white/10
+                   rounded-2xl p-6
+                   shadow-sm"
+        >
+
+            <div class="flex justify-between items-start">
+
+                <div
+                    class="w-12 h-12 rounded-xl
+                           bg-[#e8f3ef]
+                           dark:bg-[#18382e]
+                           flex items-center justify-center
+                           text-[#27705b] text-xl"
+                >
+                    ◈
+                </div>
+
+                <span
+                    class="text-xs font-medium
+                           px-3 py-1.5 rounded-full
+                           bg-[#e9f8f1]
+                           dark:bg-[#15352c]
+                           text-[#17815d]"
+                >
+                    ↑ 12.4%
+                </span>
+
+            </div>
+
+            <p
+                class="mt-5 text-sm
+                       text-slate-500
+                       dark:text-slate-400"
+            >
+                Total Deliveries
+            </p>
+
+            <div
+                id="totalDeliveries"
+                class="text-[32px]
+                       font-semibold mt-1"
+            >
+                8,421
+            </div>
+
+            <p
+                class="text-xs
+                       text-slate-400 mt-1"
+            >
+                Completed deliveries
+            </p>
+
+        </div>
+
+
+        <!-- AVG DELIVERY -->
+
+        <div
+            class="card
+                   bg-white dark:bg-[#10241e]
+                   border border-slate-200
+                   dark:border-white/10
+                   rounded-2xl p-6
+                   shadow-sm"
+        >
+
+            <div class="flex justify-between items-start">
+
+                <div
+                    class="w-12 h-12 rounded-xl
+                           bg-blue-50
+                           dark:bg-blue-500/10
+                           flex items-center justify-center
+                           text-blue-600 text-xl"
+                >
+                    ◷
+                </div>
+
+                <span
+                    class="text-xs font-medium
+                           px-3 py-1.5 rounded-full
+                           bg-[#e9f8f1]
+                           dark:bg-[#15352c]
+                           text-[#17815d]"
+                >
+                    ↓ 2.1 min
+                </span>
+
+            </div>
+
+            <p
+                class="mt-5 text-sm
+                       text-slate-500
+                       dark:text-slate-400"
+            >
+                Avg Delivery Time
+            </p>
+
+            <div
+                id="avgDelivery"
+                class="text-[32px]
+                       font-semibold mt-1"
+            >
+                27 min
+            </div>
+
+            <p
+                class="text-xs
+                       text-slate-400 mt-1"
+            >
+                Across completed deliveries
+            </p>
+
+        </div>
+
+
+        <!-- ON TIME -->
+
+        <div
+            class="card
+                   bg-white dark:bg-[#10241e]
+                   border border-slate-200
+                   dark:border-white/10
+                   rounded-2xl p-6
+                   shadow-sm"
+        >
+
+            <div class="flex justify-between items-start">
+
+                <div
+                    class="w-12 h-12 rounded-xl
+                           bg-emerald-50
+                           dark:bg-emerald-500/10
+                           flex items-center justify-center
+                           text-emerald-600 text-xl"
+                >
+                    ✓
+                </div>
+
+                <span
+                    class="text-xs font-medium
+                           px-3 py-1.5 rounded-full
+                           bg-[#e9f8f1]
+                           dark:bg-[#15352c]
+                           text-[#17815d]"
+                >
+                    ↑ 3.8%
+                </span>
+
+            </div>
+
+            <p
+                class="mt-5 text-sm
+                       text-slate-500
+                       dark:text-slate-400"
+            >
+                On-time Delivery
+            </p>
+
+            <div
+                id="onTimeRate"
+                class="text-[32px]
+                       font-semibold mt-1"
+            >
+                91.6%
+            </div>
+
+            <p
+                class="text-xs
+                       text-slate-400 mt-1"
+            >
+                Delivered within ETA
+            </p>
+
+        </div>
+
+
+        <!-- DELAY RATE -->
+
+        <div
+            class="card
+                   bg-white dark:bg-[#10241e]
+                   border border-slate-200
+                   dark:border-white/10
+                   rounded-2xl p-6
+                   shadow-sm"
+        >
+
+            <div class="flex justify-between items-start">
+
+                <div
+                    class="w-12 h-12 rounded-xl
+                           bg-amber-50
+                           dark:bg-amber-500/10
+                           flex items-center justify-center
+                           text-amber-600 text-xl"
+                >
+                    !
+                </div>
+
+                <span
+                    class="text-xs font-medium
+                           px-3 py-1.5 rounded-full
+                           bg-red-50
+                           dark:bg-red-500/10
+                           text-red-500"
+                >
+                    ↓ 1.7%
+                </span>
+
+            </div>
+
+            <p
+                class="mt-5 text-sm
+                       text-slate-500
+                       dark:text-slate-400"
+            >
+                Delay Rate
+            </p>
+
+            <div
+                id="delayRate"
+                class="text-[32px]
+                       font-semibold mt-1"
+            >
+                8.4%
+            </div>
+
+            <p
+                class="text-xs
+                       text-slate-400 mt-1"
+            >
+                Orders requiring attention
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         CHART ROW
+    ====================================================== -->
+
+    <div
+        class="grid grid-cols-1
+               xl:grid-cols-[1.6fr_1fr]
+               gap-6 mb-6"
+    >
+
+
+        <!-- DELIVERY PERFORMANCE -->
+
+        <div
+            class="card
+                   bg-white dark:bg-[#10241e]
+                   border border-slate-200
+                   dark:border-white/10
+                   rounded-2xl
+                   shadow-sm
+                   p-6"
+        >
+
+            <div
+                class="flex flex-col sm:flex-row
+                       sm:items-center
+                       justify-between gap-3 mb-7"
+            >
+
+                <div>
+
+                    <h2 class="font-semibold text-[18px]">
+                        Delivery Performance
+                    </h2>
+
+                    <p
+                        class="text-sm
+                               text-slate-400 mt-1"
+                    >
+                        On-time vs delayed deliveries
+                    </p>
+
+                </div>
+
+
+                <div class="flex items-center gap-4 text-xs">
+
+                    <div class="flex items-center gap-2">
+
+                        <span
+                            class="w-2.5 h-2.5
+                                   rounded-full
+                                   bg-[#27705b]"
+                        ></span>
+
+                        <span
+                            class="text-slate-500
+                                   dark:text-slate-400"
+                        >
+                            On-time
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex items-center gap-2">
+
+                        <span
+                            class="w-2.5 h-2.5
+                                   rounded-full
+                                   bg-red-400"
+                        ></span>
+
+                        <span
+                            class="text-slate-500
+                                   dark:text-slate-400"
+                        >
+                            Delayed
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SVG LINE CHART -->
+
+            <div class="relative h-[270px]">
+
+                <svg
+                    viewBox="0 0 760 270"
+                    preserveAspectRatio="none"
+                    class="w-full h-full"
+                >
+
+                    <!-- GRID -->
+
+                    <line
+                        x1="0" y1="35"
+                        x2="760" y2="35"
+                        class="chart-grid"
+                        stroke="currentColor"
+                    />
+
+                    <line
+                        x1="0" y1="90"
+                        x2="760" y2="90"
+                        class="chart-grid"
+                        stroke="currentColor"
+                    />
+
+                    <line
+                        x1="0" y1="145"
+                        x2="760" y2="145"
+                        class="chart-grid"
+                        stroke="currentColor"
+                    />
+
+                    <line
+                        x1="0" y1="200"
+                        x2="760" y2="200"
+                        class="chart-grid"
+                        stroke="currentColor"
+                    />
+
+
+                    <!-- ON TIME -->
+
+                    <polyline
+                        id="onTimeLine"
+                        class="chart-line"
+                        stroke="#27705b"
+                        points="
+                        20,62
+                        125,52
+                        230,75
+                        335,48
+                        440,60
+                        545,38
+                        650,55
+                        740,42
+                        "
+                    />
+
+
+                    <!-- DELAY -->
+
+                    <polyline
+                        id="delayLine"
+                        class="chart-line"
+                        stroke="#ef6b6b"
+                        points="
+                        20,200
+                        125,187
+                        230,195
+                        335,176
+                        440,189
+                        545,168
+                        650,181
+                        740,171
+                        "
+                    />
+
+                </svg>
+
+
+                <!-- X AXIS -->
+
+                <div
+                    class="absolute
+                           left-0 right-0
+                           bottom-0
+                           flex justify-between
+                           text-[11px]
+                           text-slate-400"
+                >
+
+                    <span>Mon</span>
+                    <span>Tue</span>
+                    <span>Wed</span>
+                    <span>Thu</span>
+                    <span>Fri</span>
+                    <span>Sat</span>
+                    <span>Sun</span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- PEAK HOURS -->
+
+        <div
+            class="card
+                   bg-white dark:bg-[#10241e]
+                   border border-slate-200
+                   dark:border-white/10
+                   rounded-2xl
+                   shadow-sm
+                   p-6"
+        >
+
+            <div
+                class="flex items-start
+                       justify-between mb-7"
+            >
+
+                <div>
+
+                    <h2 class="font-semibold text-[18px]">
+                        Peak-hour Analytics
+                    </h2>
+
+                    <p
+                        class="text-sm
+                               text-slate-400 mt-1"
+                    >
+                        Order volume by hour
+                    </p>
+
+                </div>
+
+                <span
+                    class="px-3 py-1.5
+                           rounded-full
+                           text-xs font-medium
+                           bg-[#eaf5f1]
+                           dark:bg-[#17362d]
+                           text-[#27705b]
+                           dark:text-[#79c5ac]"
+                >
+                    Peak: 8 PM
+                </span>
+
+            </div>
+
+
+            <div
+                class="h-[270px]
+                       flex items-end
+                       justify-between gap-2
+                       px-2"
+            >
+
+                <div class="flex flex-col items-center gap-2 h-full justify-end">
+                    <div class="bar w-5 sm:w-7 rounded-t-md bg-[#a6d5c6]" style="height:38%"></div>
+                    <span class="text-[10px] text-slate-400">12</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 h-full justify-end">
+                    <div class="bar w-5 sm:w-7 rounded-t-md bg-[#8bc7b5]" style="height:46%"></div>
+                    <span class="text-[10px] text-slate-400">2</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 h-full justify-end">
+                    <div class="bar w-5 sm:w-7 rounded-t-md bg-[#6fb8a3]" style="height:58%"></div>
+                    <span class="text-[10px] text-slate-400">4</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 h-full justify-end">
+                    <div class="bar w-5 sm:w-7 rounded-t-md bg-[#4fa28a]" style="height:74%"></div>
+                    <span class="text-[10px] text-slate-400">6</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 h-full justify-end">
+                    <div class="bar w-5 sm:w-7 rounded-t-md bg-[#27705b]" style="height:94%"></div>
+                    <span class="text-[10px] text-slate-400 font-semibold">8</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 h-full justify-end">
+                    <div class="bar w-5 sm:w-7 rounded-t-md bg-[#4fa28a]" style="height:81%"></div>
+                    <span class="text-[10px] text-slate-400">10</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 h-full justify-end">
+                    <div class="bar w-5 sm:w-7 rounded-t-md bg-[#75bca9]" style="height:60%"></div>
+                    <span class="text-[10px] text-slate-400">12</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         LOWER ANALYTICS
+    ====================================================== -->
+
+    <div
+        class="grid grid-cols-1
+               lg:grid-cols-2
+               gap-6 mb-6"
+    >
+
+
+        <!-- RIDER UTILIZATION -->
+
+        <div
+            class="card
+                   bg-white dark:bg-[#10241e]
+                   border border-slate-200
+                   dark:border-white/10
+                   rounded-2xl
+                   shadow-sm
+                   p-6"
+        >
+
+            <div
+                class="flex items-center
+                       justify-between mb-6"
+            >
+
+                <div>
+
+                    <h2 class="font-semibold text-[18px]">
+                        Rider Utilization
+                    </h2>
+
+                    <p
+                        class="text-sm
+                               text-slate-400 mt-1"
+                    >
+                        Current fleet capacity
+                    </p>
+
+                </div>
+
+                <button
+                    class="text-sm
+                           text-[#27705b]
+                           dark:text-[#72bea5]
+                           font-medium"
+                    id="riderViewButton"
+                >
+                    View Riders →
+                </button>
+
+            </div>
+
+
+            <div
+                class="flex items-center
+                       gap-8"
+            >
+
+                <!-- DONUT -->
+
+                <div
+                    class="relative
+                           w-[150px]
+                           h-[150px]
+                           rounded-full
+                           flex items-center
+                           justify-center
+                           shrink-0"
+                    style="
+                        background:
+                        conic-gradient(
+                            #27705b 0deg 273.6deg,
+                            #dbe8e3 273.6deg 360deg
+                        );
+                    "
+                >
+
+                    <div
+                        class="absolute
+                               inset-[14px]
+                               rounded-full
+                               bg-white
+                               dark:bg-[#10241e]
+                               flex flex-col
+                               items-center
+                               justify-center"
+                    >
+
+                        <span
+                            id="utilizationValue"
+                            class="text-[30px]
+                                   font-semibold"
+                        >
+                            76%
+                        </span>
+
+                        <span
+                            class="text-xs
+                                   text-slate-400"
+                        >
+                            utilization
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="flex-1 space-y-5">
+
+                    <div>
+
+                        <div
+                            class="flex justify-between
+                                   text-sm mb-2"
+                        >
+
+                            <span
+                                class="text-slate-500
+                                       dark:text-slate-400"
+                            >
+                                On Delivery
+                            </span>
+
+                            <span class="font-semibold">
+                                647
+                            </span>
+
+                        </div>
+
+                        <div
+                            class="h-2 rounded-full
+                                   bg-slate-100
+                                   dark:bg-white/10"
+                        >
+
+                            <div
+                                class="h-full
+                                       w-[76%]
+                                       rounded-full
+                                       bg-[#27705b]"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="flex justify-between
+                               items-center"
+                    >
+
+                        <div class="flex items-center gap-2">
+
+                            <span
+                                class="w-2.5 h-2.5
+                                       rounded-full
+                                       bg-blue-400"
+                            ></span>
+
+                            <span
+                                class="text-sm
+                                       text-slate-500
+                                       dark:text-slate-400"
+                            >
+                                Available
+                            </span>
+
+                        </div>
+
+                        <span class="font-semibold">
+                            84
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        class="flex justify-between
+                               items-center"
+                    >
+
+                        <div class="flex items-center gap-2">
+
+                            <span
+                                class="w-2.5 h-2.5
+                                       rounded-full
+                                       bg-slate-400"
+                            ></span>
+
+                            <span
+                                class="text-sm
+                                       text-slate-500
+                                       dark:text-slate-400"
+                            >
+                                Offline
+                            </span>
+
+                        </div>
+
+                        <span class="font-semibold">
+                            12
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- RESTAURANT PERFORMANCE -->
+
+        <div
+            class="card
+                   bg-white dark:bg-[#10241e]
+                   border border-slate-200
+                   dark:border-white/10
+                   rounded-2xl
+                   shadow-sm
+                   p-6"
+        >
+
+            <div
+                class="flex items-center
+                       justify-between mb-6"
+            >
+
+                <div>
+
+                    <h2 class="font-semibold text-[18px]">
+                        Restaurant Performance
+                    </h2>
+
+                    <p
+                        class="text-sm
+                               text-slate-400 mt-1"
+                    >
+                        Preparation efficiency
+                    </p>
+
+                </div>
+
+                <button
+                    id="restaurantViewButton"
+                    class="text-sm
+                           text-[#27705b]
+                           dark:text-[#72bea5]
+                           font-medium"
+                >
+                    View Restaurants →
+                </button>
+
+            </div>
+
+
+            <div class="space-y-5">
+
+                <!-- RESTAURANT 1 -->
+
+                <div>
+
+                    <div
+                        class="flex justify-between
+                               items-center mb-2"
+                    >
+
+                        <div>
+
+                            <div class="font-medium text-sm">
+                                Spice Hub
+                            </div>
+
+                            <div
+                                class="text-xs
+                                       text-slate-400"
+                            >
+                                16 min avg prep
+                            </div>
+
+                        </div>
+
+                        <span
+                            class="text-xs font-medium
+                                   text-[#27705b]"
+                        >
+                            Low delay
+                        </span>
+
+                    </div>
+
+                    <div
+                        class="h-2 rounded-full
+                               bg-slate-100
+                               dark:bg-white/10"
+                    >
+
+                        <div
+                            class="h-full
+                                   w-[42%]
+                                   rounded-full
+                                   bg-[#27705b]"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RESTAURANT 2 -->
+
+                <div>
+
+                    <div
+                        class="flex justify-between
+                               items-center mb-2"
+                    >
+
+                        <div>
+
+                            <div class="font-medium text-sm">
+                                Urban Bites
+                            </div>
+
+                            <div
+                                class="text-xs
+                                       text-slate-400"
+                            >
+                                24 min avg prep
+                            </div>
+
+                        </div>
+
+                        <span
+                            class="text-xs font-medium
+                                   text-amber-600"
+                        >
+                            Medium
+                        </span>
+
+                    </div>
+
+                    <div
+                        class="h-2 rounded-full
+                               bg-slate-100
+                               dark:bg-white/10"
+                    >
+
+                        <div
+                            class="h-full
+                                   w-[68%]
+                                   rounded-full
+                                   bg-amber-500"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RESTAURANT 3 -->
+
+                <div>
+
+                    <div
+                        class="flex justify-between
+                               items-center mb-2"
+                    >
+
+                        <div>
+
+                            <div class="font-medium text-sm">
+                                Food Lab
+                            </div>
+
+                            <div
+                                class="text-xs
+                                       text-slate-400"
+                            >
+                                31 min avg prep
+                            </div>
+
+                        </div>
+
+                        <span
+                            class="text-xs font-medium
+                                   text-red-500"
+                        >
+                            High delay
+                        </span>
+
+                    </div>
+
+                    <div
+                        class="h-2 rounded-full
+                               bg-slate-100
+                               dark:bg-white/10"
+                    >
+
+                        <div
+                            class="h-full
+                                   w-[88%]
+                                   rounded-full
+                                   bg-red-400"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         INSIGHTS
+    ====================================================== -->
+
+    <div
+        class="card
+               bg-white dark:bg-[#10241e]
+               border border-slate-200
+               dark:border-white/10
+               rounded-2xl
+               shadow-sm p-6"
+    >
+
+        <div
+            class="flex items-center
+                   justify-between mb-6"
+        >
+
+            <div>
+
+                <h2 class="font-semibold text-[18px]">
+                    Top Insights
+                </h2>
+
+                <p
+                    class="text-sm
+                           text-slate-400 mt-1"
+                >
+                    Operational patterns from demo data
+                </p>
+
+            </div>
+
+            <span
+                class="px-3 py-1.5
+                       rounded-full
+                       bg-slate-100
+                       dark:bg-white/10
+                       text-xs
+                       text-slate-500
+                       dark:text-slate-300"
+            >
+                Demo analytics
+            </span>
+
+        </div>
+
+
+        <div
+            class="grid grid-cols-1
+                   md:grid-cols-3
+                   gap-4"
+        >
+
+            <!-- INSIGHT 1 -->
+
+            <div
+                class="rounded-xl
+                       border border-slate-200
+                       dark:border-white/10
+                       p-5
+                       bg-[#fbfcfc]
+                       dark:bg-[#0d211c]"
+            >
+
+                <div
+                    class="w-10 h-10 rounded-xl
+                           bg-[#e8f3ef]
+                           dark:bg-[#18382e]
+                           flex items-center
+                           justify-center
+                           text-[#27705b]
+                           mb-4"
+                >
+                    ↗
+                </div>
+
+                <div
+                    class="font-semibold mb-1"
+                >
+                    Peak demand: 7–9 PM
+                </div>
+
+                <p
+                    class="text-sm
+                           text-slate-500
+                           dark:text-slate-400
+                           leading-6"
+                >
+                    Order volume reaches its highest
+                    level during the evening delivery window.
+                </p>
+
+            </div>
+
+
+            <!-- INSIGHT 2 -->
+
+            <div
+                class="rounded-xl
+                       border border-slate-200
+                       dark:border-white/10
+                       p-5
+                       bg-[#fbfcfc]
+                       dark:bg-[#0d211c]"
+            >
+
+                <div
+                    class="w-10 h-10 rounded-xl
+                           bg-amber-50
+                           dark:bg-amber-500/10
+                           flex items-center
+                           justify-center
+                           text-amber-600
+                           mb-4"
+                >
+                    !
+                </div>
+
+                <div
+                    class="font-semibold mb-1"
+                >
+                    Prep time needs attention
+                </div>
+
+                <p
+                    class="text-sm
+                           text-slate-500
+                           dark:text-slate-400
+                           leading-6"
+                >
+                    Food Lab currently shows the highest
+                    average preparation time in the demo dataset.
+                </p>
+
+            </div>
+
+
+            <!-- INSIGHT 3 -->
+
+            <div
+                class="rounded-xl
+                       border border-slate-200
+                       dark:border-white/10
+                       p-5
+                       bg-[#fbfcfc]
+                       dark:bg-[#0d211c]"
+            >
+
+                <div
+                    class="w-10 h-10 rounded-xl
+                           bg-blue-50
+                           dark:bg-blue-500/10
+                           flex items-center
+                           justify-center
+                           text-blue-600
+                           mb-4"
+                >
+                    ◷
+                </div>
+
+                <div
+                    class="font-semibold mb-1"
+                >
+                    Delivery time improving
+                </div>
+
+                <p
+                    class="text-sm
+                           text-slate-500
+                           dark:text-slate-400
+                           leading-6"
+                >
+                    Average delivery time has improved
+                    compared with the previous period.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</section>
+
+</main>
+
+
+
+<!-- =========================================================
+     TOAST
+========================================================= -->
+
+<div
+    id="toast"
+    class="fixed
+           right-6 bottom-6
+           hidden
+           z-[100]"
+>
+
+    <div
+        class="toast
+               min-w-[280px]
+               bg-[#0b211b]
+               text-white
+               rounded-2xl
+               px-5 py-4
+               shadow-2xl
+               flex items-center gap-3"
+    >
+
+        <div
+            class="w-9 h-9
+                   rounded-xl
+                   bg-[#173b30]
+                   flex items-center
+                   justify-center"
+        >
+            ✓
+        </div>
+
+        <div>
+
+            <div
+                id="toastTitle"
+                class="font-semibold"
+            >
+                Updated
+            </div>
+
+            <div
+                id="toastMessage"
+                class="text-xs
+                       text-slate-300
+                       mt-0.5"
+            >
+                Analytics refreshed.
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+    /* =====================================================
+       THEME
+    ====================================================== */
+
+    const body = document.body;
+
+    const lightTheme =
+        document.getElementById("lightTheme");
+
+    const darkTheme =
+        document.getElementById("darkTheme");
+
+    const mobileThemeButton =
+        document.getElementById("mobileThemeButton");
+
+
+    function applyTheme(theme) {
+
+        body.classList.add("theme-transition");
+
+        if (theme === "dark") {
+
+            document.documentElement.classList.add("dark");
+
+            localStorage.setItem(
+                "routeiq-theme",
+                "dark"
+            );
+
+        } else {
+
+            document.documentElement.classList.remove("dark");
+
+            localStorage.setItem(
+                "routeiq-theme",
+                "light"
+            );
+
+        }
+
+        updateThemeButtons();
+
+        setTimeout(() => {
+
+            body.classList.remove(
+                "theme-transition"
+            );
+
+        }, 500);
+    }
+
+
+    function updateThemeButtons() {
+
+        const current =
+            localStorage.getItem("routeiq-theme") ||
+            "light";
+
+        if (current === "dark") {
+
+            darkTheme.classList.add(
+                "bg-white",
+                "dark:bg-[#24483c]",
+                "shadow-sm"
+            );
+
+            darkTheme.classList.remove(
+                "text-slate-400"
+            );
+
+            lightTheme.classList.remove(
+                "bg-white",
+                "dark:bg-[#24483c]",
+                "shadow-sm"
+            );
+
+        } else {
+
+            lightTheme.classList.add(
+                "bg-white",
+                "dark:bg-[#24483c]",
+                "shadow-sm"
+            );
+
+            darkTheme.classList.remove(
+                "bg-white",
+                "dark:bg-[#24483c]",
+                "shadow-sm"
+            );
+
+        }
+
+    }
+
+
+    lightTheme.addEventListener(
+        "click",
+        () => applyTheme("light")
+    );
+
+
+    darkTheme.addEventListener(
+        "click",
+        () => applyTheme("dark")
+    );
+
+
+    mobileThemeButton.addEventListener(
+        "click",
+        () => {
+
+            const current =
+                localStorage.getItem("routeiq-theme") ||
+                "light";
+
+            applyTheme(
+                current === "light"
+                    ? "dark"
+                    : "light"
+            );
+
+        }
+    );
+
+
+    const savedTheme =
+        localStorage.getItem("routeiq-theme") ||
+        "light";
+
+    applyTheme(savedTheme);
+
+
+
+    /* =====================================================
+       TOAST
+    ====================================================== */
+
+    const toast =
+        document.getElementById("toast");
+
+    const toastTitle =
+        document.getElementById("toastTitle");
+
+    const toastMessage =
+        document.getElementById("toastMessage");
+
+
+    function showToast(
+        title,
+        message
+    ) {
+
+        toastTitle.textContent = title;
+
+        toastMessage.textContent = message;
+
+        toast.classList.remove("hidden");
+
+        clearTimeout(
+            window.routeIQToast
+        );
+
+        window.routeIQToast =
+            setTimeout(() => {
+
+                toast.classList.add("hidden");
+
+            }, 2500);
+
+    }
+
+
+
+    /* =====================================================
+       DATE RANGE FILTER
+    ====================================================== */
+
+    const rangeButtons =
+        document.querySelectorAll(
+            ".range-btn"
+        );
+
+
+    const demoData = {
+
+        today: {
+            deliveries: "8,421",
+            avg: "27 min",
+            onTime: "91.6%",
+            delay: "8.4%"
+        },
+
+        "7": {
+            deliveries: "52,342",
+            avg: "29 min",
+            onTime: "90.8%",
+            delay: "9.2%"
+        },
+
+        "30": {
+            deliveries: "214,782",
+            avg: "30 min",
+            onTime: "89.7%",
+            delay: "10.3%"
+        }
+
+    };
+
+
+    function updateRange(range) {
+
+        rangeButtons.forEach(
+            button => {
+
+                button.classList.remove(
+                    "bg-[#27705b]",
+                    "text-white"
+                );
+
+                button.classList.add(
+                    "text-slate-500",
+                    "dark:text-slate-400"
+                );
+
+            }
+        );
+
+
+        const active =
+            document.querySelector(
+                `[data-range="${range}"]`
+            );
+
+        if (active) {
+
+            active.classList.add(
+                "bg-[#27705b]",
+                "text-white"
+            );
+
+            active.classList.remove(
+                "text-slate-500",
+                "dark:text-slate-400"
+            );
+
+        }
+
+
+        const data =
+            demoData[range];
+
+
+        document.getElementById(
+            "totalDeliveries"
+        ).textContent =
+            data.deliveries;
+
+
+        document.getElementById(
+            "avgDelivery"
+        ).textContent =
+            data.avg;
+
+
+        document.getElementById(
+            "onTimeRate"
+        ).textContent =
+            data.onTime;
+
+
+        document.getElementById(
+            "delayRate"
+        ).textContent =
+            data.delay;
+
+
+        showToast(
+            "Analytics updated",
+            range === "today"
+                ? "Showing today's demo data."
+                : `Showing the last ${range} days.`
+        );
+
+    }
+
+
+    rangeButtons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    updateRange(
+                        button.dataset.range
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+
+    /* =====================================================
+       REFRESH
+    ====================================================== */
+
+    const refreshButton =
+        document.getElementById(
+            "refreshButton"
+        );
+
+    const refreshIcon =
+        document.getElementById(
+            "refreshIcon"
+        );
+
+
+    refreshButton.addEventListener(
+        "click",
+        () => {
+
+            refreshIcon.classList.add(
+                "animate-spin"
+            );
+
+            refreshButton.disabled = true;
+
+            setTimeout(() => {
+
+                refreshIcon.classList.remove(
+                    "animate-spin"
+                );
+
+                refreshButton.disabled = false;
+
+                showToast(
+                    "Analytics refreshed",
+                    "Demo metrics are up to date."
+                );
+
+            }, 700);
+
+        }
+    );
+
+
+
+    /* =====================================================
+       NAVIGATION BUTTONS
+    ====================================================== */
+
+    document
+        .getElementById(
+            "riderViewButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                window.location.href =
+                    "riders.html";
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "restaurantViewButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                window.location.href =
+                    "restaurants.html";
+
+            }
+        );
+
+
+
+    /* =====================================================
+       NOTIFICATION
+    ====================================================== */
+
+    document
+        .getElementById(
+            "notificationButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                showToast(
+                    "Notifications",
+                    "You have 3 operational updates."
+                );
+
+            }
+        );
+
+
+    /* =====================================================
+       INITIAL
+    ====================================================== */
+
+    updateRange("today");
+
+</script>
+
+    <script src="../app-sidebar.js"></script>
+</body>
+</html>

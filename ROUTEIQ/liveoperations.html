@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RouteIQ — Live Operations</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          route: {
+            50:'#f3f8f5',100:'#e3eee8',200:'#c8ddd2',300:'#9fc1b0',400:'#6e9f89',500:'#39745e',600:'#285e4c',700:'#214b3d',800:'#1b3c32',900:'#162f28'
+          }
+        },
+        boxShadow: {
+          premium:'0 18px 45px rgba(24,48,40,.08)',
+          'premium-dark':'0 18px 45px rgba(0,0,0,.22)'
+        }
+      }
+    }
+  }
+</script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,.sidebar-item,.order-row,.marker,.filter-control,.page-btn,.kpi-card,.map-control,.action-btn{
+  transition:transform .2s ease,background-color .25s ease,border-color .25s ease,color .25s ease,box-shadow .25s ease,opacity .2s ease;
+}
+button:active,.page-btn:active,.action-btn:active{transform:scale(.97)}
+.sidebar-item:hover,.order-row:hover{transform:translateX(2px)}
+.filter-control:hover,.page-btn:hover,.map-control:hover,.action-btn:hover{transform:translateY(-1px)}
+.kpi-card:hover{transform:translateY(-3px);box-shadow:0 14px 35px rgba(24,48,40,.09)}
+.dark .kpi-card:hover{box-shadow:0 14px 35px rgba(0,0,0,.22)}
+html.theme-transition,html.theme-transition *,html.theme-transition *::before,html.theme-transition *::after{transition:background-color .45s ease,color .35s ease,border-color .35s ease,box-shadow .35s ease!important}
+::view-transition-group(root){animation-duration:.55s}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-new(root){clip-path:circle(0 at var(--theme-x) var(--theme-y));animation:routeThemeReveal .55s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes routeThemeReveal{to{clip-path:circle(150% at var(--theme-x) var(--theme-y))}}
+.sidebar-item.active{background:#285e4c;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.dark .sidebar-item.active{background:#39745e}
+.map-grid{background-color:#10201b;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:45px 45px}
+.map-road{position:absolute;height:5px;background:rgba(255,255,255,.18);border-radius:999px;transform-origin:left center;box-shadow:0 0 0 1px rgba(255,255,255,.05)}
+.marker{position:absolute;width:13px;height:13px;border-radius:50%;border:3px solid white;box-shadow:0 4px 13px rgba(0,0,0,.35);cursor:pointer;z-index:4}
+.marker:hover{transform:scale(1.5)}
+.marker.green{background:#4bb98b}.marker.blue{background:#5d9bea}.marker.purple{background:#9a75df}.marker.red{background:#df6262}.marker.amber{background:#e5a53e}
+.map-pulse{position:absolute;width:34px;height:34px;border-radius:50%;border:1px solid rgba(75,185,139,.35);animation:pulse 2s infinite;transform:translate(-10px,-10px)}
+@keyframes pulse{0%{opacity:.8;transform:translate(-10px,-10px) scale(.6)}70%{opacity:0;transform:translate(-10px,-10px) scale(1.5)}100%{opacity:0}}
+.toast{transform:translateY(100px);opacity:0;pointer-events:none}.toast.show{transform:translateY(0);opacity:1}
+.modal{opacity:0;pointer-events:none}.modal.show{opacity:1;pointer-events:auto}.modal-card{transform:translateY(15px) scale(.98)}.modal.show .modal-card{transform:translateY(0) scale(1)}
+select{background-image:none}
+input::placeholder{color:#94a3b8}
+.dark input::placeholder{color:#64748b}
+.table-scroll::-webkit-scrollbar,.custom-scroll::-webkit-scrollbar{height:7px;width:7px}.table-scroll::-webkit-scrollbar-thumb,.custom-scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}.dark .table-scroll::-webkit-scrollbar-thumb,.dark .custom-scroll::-webkit-scrollbar-thumb{background:#33443e}
+@media(max-width:1024px){#sidebar{transform:translateX(-100%)}#sidebar.open{transform:translateX(0)}#sidebarOverlay.show{display:block}}
+
+/* ===== LIVE OPERATIONS PAGE ===== */
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4bb98b;box-shadow:0 0 0 4px rgba(75,185,139,.12);animation:liveBlink 1.8s infinite}
+@keyframes liveBlink{0%,100%{opacity:1}50%{opacity:.45}}
+
+.live-map{
+  background:#e8eeeb;
+  position:relative;
+}
+.dark .live-map{background:#0c1713}
+
+.map-grid{
+  position:absolute;
+  inset:0;
+  background-color:#e8eeeb;
+  background-image:
+    linear-gradient(rgba(35,73,61,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(35,73,61,.055) 1px,transparent 1px);
+  background-size:42px 42px;
+}
+.dark .map-grid{
+  background-color:#0c1713;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+}
+
+/* subtle neighbourhood blocks */
+.map-block{
+  position:absolute;
+  z-index:1;
+  border:1px solid rgba(57,116,94,.09);
+  background:rgba(255,255,255,.22);
+  border-radius:18px;
+}
+.dark .map-block{
+  border-color:rgba(255,255,255,.035);
+  background:rgba(255,255,255,.018);
+}
+
+.map-water{
+  position:absolute;
+  z-index:1;
+  background:rgba(77,143,170,.10);
+  border:1px solid rgba(77,143,170,.08);
+  filter:none;
+}
+.water-one{
+  width:145%;height:145px;left:-25%;top:57%;
+  transform:rotate(-11deg);
+  border-radius:50%;
+}
+.water-two{
+  width:65%;height:70px;right:-18%;top:6%;
+  transform:rotate(18deg);
+  border-radius:50%;
+}
+
+.map-roads{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+}
+.map-road-main{
+  fill:none;
+  stroke:rgba(255,255,255,.92);
+  stroke-width:7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.dark .map-road-main{stroke:rgba(255,255,255,.19)}
+.map-road-secondary{
+  fill:none;
+  stroke:rgba(255,255,255,.72);
+  stroke-width:4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.dark .map-road-secondary{stroke:rgba(255,255,255,.12)}
+.map-road-outline{
+  fill:none;
+  stroke:rgba(91,112,105,.16);
+  stroke-width:10;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.dark .map-road-outline{stroke:rgba(0,0,0,.28)}
+
+.zone-label{
+  position:absolute;
+  z-index:3;
+  color:rgba(15,45,37,.48);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  pointer-events:none;
+}
+.dark .zone-label{color:rgba(255,255,255,.28)}
+.zone-a{left:13%;top:18%}.zone-b{left:58%;top:25%}.zone-c{left:36%;top:69%}.zone-d{right:10%;bottom:20%}
+
+.map-center-label{
+  position:absolute;
+  z-index:3;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  color:rgba(15,45,37,.22);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  pointer-events:none;
+}
+.dark .map-center-label{color:rgba(255,255,255,.12)}
+
+#mapLayers{
+  position:absolute;
+  inset:0;
+  z-index:10;
+  transform-origin:center center;
+  transition:transform .3s cubic-bezier(.22,1,.36,1);
+}
+
+.map-marker{
+  position:absolute;
+  z-index:10;
+  cursor:pointer;
+  transition:transform .22s ease,filter .22s ease;
+}
+.map-marker:hover{transform:translate(-50%,-50%) scale(1.16);filter:brightness(1.08)}
+.map-marker.rider-marker{transform:translate(-50%,-50%);margin:0}
+.map-marker.rider-marker:hover{transform:translate(-50%,-50%) scale(1.18)}
+.map-marker.order-marker,.map-marker.restaurant-marker{transform:translate(-50%,-50%)}
+
+.rider-marker{
+  width:25px;height:25px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid rgba(255,255,255,.96);
+  box-shadow:0 5px 15px rgba(0,0,0,.25);
+}
+.rider-marker.available{background:#4b9fe8}
+.rider-marker.delivery{background:#39745e}
+.rider-marker.delayed{background:#df6262}
+.rider-marker i{width:13px;height:13px;color:white}
+
+.map-pulse{
+  position:absolute;
+  width:38px;height:38px;
+  border-radius:50%;
+  border:1px solid rgba(57,116,94,.34);
+  animation:pulse 2.2s infinite;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  z-index:8;
+}
+@keyframes pulse{
+  0%{opacity:.8;transform:translate(-50%,-50%) scale(.55)}
+  70%{opacity:0;transform:translate(-50%,-50%) scale(1.45)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.45)}
+}
+
+.order-marker{
+  width:11px;height:11px;border-radius:50%;
+  background:#8b72d6;
+  border:2px solid white;
+  box-shadow:0 3px 10px rgba(0,0,0,.28);
+}
+.order-marker.high{
+  background:#df6262;
+  animation:orderPulse 1.8s infinite;
+}
+.restaurant-marker{
+  width:23px;height:23px;border-radius:7px;
+  background:#d99a35;
+  border:2px solid white;
+  box-shadow:0 5px 13px rgba(0,0,0,.22);
+  display:flex;align-items:center;justify-content:center;
+}
+.restaurant-marker i{width:11px;height:11px;color:white}
+
+.route-line{
+  position:absolute;
+  z-index:7;
+  height:2px;
+  transform-origin:left center;
+  background:linear-gradient(90deg,rgba(57,116,94,.08),rgba(57,116,94,.45));
+  pointer-events:none;
+  border-radius:999px;
+}
+.dark .route-line{
+  background:linear-gradient(90deg,rgba(110,159,137,.05),rgba(110,159,137,.30));
+}
+
+@keyframes orderPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(223,98,98,.40),0 3px 10px rgba(0,0,0,.28)}
+  60%{box-shadow:0 0 0 9px rgba(223,98,98,0),0 3px 10px rgba(0,0,0,.28)}
+}
+.legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%}.rider-dot{background:#4b9fe8}.order-dot{background:#9a75df}.restaurant-dot{background:#e5a53e}
+.active-map-filter{box-shadow:0 5px 15px rgba(40,94,76,.18)}
+.live-order{transition:background-color .2s ease,transform .2s ease,border-color .2s ease}
+.live-order:hover{transform:translateX(2px)}
+.risk-line{width:3px;border-radius:99px;align-self:stretch}.risk-low{background:#4bb98b}.risk-medium{background:#e5a53e}.risk-high{background:#df6262}
+.status-pill{font-size:10px;font-weight:600;padding:4px 7px;border-radius:999px;white-space:nowrap}
+.status-available{background:rgba(75,159,232,.11);color:#347fbe}.dark .status-available{color:#8fc7fa}
+.status-delivery{background:rgba(57,116,94,.11);color:#285e4c}.dark .status-delivery{color:#78b89d}
+.status-offline{background:rgba(100,116,139,.11);color:#64748b}.dark .status-offline{color:#94a3b8}
+.alert-item{transition:transform .2s ease,background-color .2s ease}.alert-item:hover{transform:translateX(2px)}
+
+</style>
+<link rel="stylesheet" href="app-sidebar.css">
+</head>
+<body class="bg-[#f6f7f5] text-slate-900 dark:bg-[#101513] dark:text-slate-100 transition-all">
+
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden"></div>
+
+<aside id="sidebar" class="fixed z-50 left-0 top-0 h-screen w-[245px] bg-[#13231e] text-white border-r border-white/5 transition-all duration-300">
+  <div class="h-full flex flex-col">
+    <div class="px-5 pt-5 pb-6">
+      <div class="flex items-center gap-3">
+        <img src="routeiq-logo.svg" alt="RouteIQ" class="h-10 w-auto object-contain">
+        <div>
+          <div class="font-semibold tracking-tight text-lg">Route<span class="text-route-300">IQ</span></div>
+          <div class="text-[10px] text-white/45 uppercase tracking-widest">Operations</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-6 text-[10px] text-white/35 uppercase tracking-[.18em] mb-2">Management</div>
+    <nav class="px-3 space-y-1">
+      <button data-nav="dashboard" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i><span>Dashboard</span></button>
+      <button data-nav="orders" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"><i data-lucide="package-search" class="w-[18px] h-[18px]"></i><span>Orders</span></button>
+      <button data-nav="riders" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="bike" class="w-[18px] h-[18px]"></i><span>Riders</span></button>
+      <button data-nav="restaurants" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="store" class="w-[18px] h-[18px]"></i><span>Restaurants</span></button>
+      <button data-nav="live" class="sidebar-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="radio-tower" class="w-[18px] h-[18px]"></i><span>Live Operations</span></button>
+      <button data-nav="analytics" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="chart-no-axes-combined" class="w-[18px] h-[18px]"></i><span>Analytics</span></button>
+      <button data-nav="reports" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="file-text" class="w-[18px] h-[18px]"></i><span>Reports</span></button>
+    </nav>
+
+    <div class="mx-5 my-5 border-t border-white/10"></div>
+    <div class="px-6 text-[10px] text-white/35 uppercase tracking-[.18em] mb-2">Settings</div>
+    <nav class="px-3 space-y-1">
+      <button data-nav="profile" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="circle-user-round" class="w-[18px] h-[18px]"></i><span>Profile</span></button>
+      <button data-nav="notifications" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="bell" class="w-[18px] h-[18px]"></i><span>Notifications</span></button>
+      <button data-nav="settings" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/5"><i data-lucide="settings" class="w-[18px] h-[18px]"></i><span>Settings</span></button>
+    </nav>
+
+    <div class="mt-auto px-6 pb-6">
+      <div class="h-px bg-white/10 mb-4"></div>
+      <div class="text-xs text-white/45">Smarter Deliveries</div>
+      <div class="text-sm text-white/75 font-medium">Better Operations</div>
+    </div>
+  </div>
+</aside>
+
+
+<main class="lg:ml-[245px] min-h-screen">
+  <header class="h-[66px] sticky top-0 z-30 bg-[#f6f7f5]/90 dark:bg-[#101513]/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/5 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center gap-3 min-w-0 flex-1">
+      <button id="mobileMenu" class="lg:hidden w-10 h-10 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#16201c] flex items-center justify-center">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+      <div class="hidden sm:flex items-center gap-2.5 w-full max-w-[490px] h-10 px-3.5 rounded-xl bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 shadow-sm">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+        <input id="globalSearch" type="text" class="w-full bg-transparent outline-none text-sm" placeholder="Search rider, order, restaurant, or zone...">
+        <span class="text-[10px] text-slate-400 border border-slate-200 dark:border-white/10 rounded-md px-1.5 py-0.5">⌘ K</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <button id="notificationBtn" class="relative w-10 h-10 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/5 flex items-center justify-center">
+        <i data-lucide="bell" class="w-[18px] h-[18px]"></i>
+        <span class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-red-500"></span>
+      </button>
+      <button id="themeToggle" class="relative w-[72px] h-10 rounded-full bg-slate-200 dark:bg-[#1b2924] border border-slate-300/70 dark:border-white/10 overflow-hidden flex items-center px-1 shadow-sm" aria-label="Toggle theme">
+        <span class="absolute left-1 top-1 w-8 h-8 rounded-full bg-white dark:bg-[#39745e] shadow-md transition-all duration-300 dark:translate-x-8"></span>
+        <i data-lucide="sun" id="sunIcon" class="w-4 h-4 ml-2 text-slate-500 dark:text-white/45 relative z-10"></i>
+        <i data-lucide="moon" id="moonIcon" class="w-4 h-4 ml-auto mr-2 text-slate-700 dark:text-white relative z-10"></i>
+      </button>
+      <div class="hidden sm:flex items-center gap-2.5 ml-1 pl-3 border-l border-slate-200 dark:border-white/10">
+        <div class="w-9 h-9 rounded-full bg-route-700 text-white flex items-center justify-center text-xs font-semibold">AS</div>
+        <div class="hidden xl:block leading-tight"><div class="text-sm font-semibold">Anshika Singhroul</div><div class="text-[11px] text-slate-400">Operations Manager</div></div>
+        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+      </div>
+    </div>
+  </header>
+
+  <section class="px-4 sm:px-6 lg:px-8 py-7 max-w-[1800px] mx-auto">
+    <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-4 mb-6">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-route-600 dark:text-route-400 font-medium mb-1">
+          <span class="live-dot"></span> Operations / Live Operations
+        </div>
+        <h1 class="text-3xl md:text-[34px] font-semibold tracking-tight">Live Operations</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Monitor riders, active deliveries and emerging delay risks in real-time.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <div class="h-10 px-3.5 rounded-xl bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 text-sm flex items-center gap-2 shadow-sm">
+          <span class="live-dot"></span>
+          <span>Live</span>
+          <span id="lastUpdated" class="text-slate-400">Updated just now</span>
+        </div>
+        <button id="refreshBtn" class="h-10 px-4 rounded-xl bg-route-600 hover:bg-route-700 text-white text-sm font-medium flex items-center gap-2 shadow-sm">
+          <i data-lucide="refresh-cw" id="refreshIcon" class="w-4 h-4"></i>Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- LIVE STATS -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
+      <div class="kpi-card bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div class="w-9 h-9 rounded-xl bg-route-100 dark:bg-route-900/60 text-route-600 dark:text-route-300 flex items-center justify-center"><i data-lucide="truck" class="w-[18px] h-[18px]"></i></div>
+          <span class="text-[10px] font-semibold text-route-600 dark:text-route-300 bg-route-50 dark:bg-route-500/10 rounded-full px-2 py-1">LIVE</span>
+        </div>
+        <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">Active Deliveries</div>
+        <div id="activeDeliveries" class="text-2xl font-semibold mt-1">18</div>
+        <div class="text-[11px] text-slate-400 mt-1">Currently on route</div>
+      </div>
+
+      <div class="kpi-card bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 flex items-center justify-center"><i data-lucide="bike" class="w-[18px] h-[18px]"></i></div>
+          <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-full px-2 py-1">ONLINE</span>
+        </div>
+        <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">Available Riders</div>
+        <div id="availableRiders" class="text-2xl font-semibold mt-1">9</div>
+        <div class="text-[11px] text-slate-400 mt-1">Ready for assignment</div>
+      </div>
+
+      <div class="kpi-card bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div class="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-300 flex items-center justify-center"><i data-lucide="triangle-alert" class="w-[18px] h-[18px]"></i></div>
+          <span id="delayBadge" class="text-[10px] font-semibold text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-500/10 rounded-full px-2 py-1">HIGH RISK</span>
+        </div>
+        <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">Delayed Orders</div>
+        <div id="delayedOrders" class="text-2xl font-semibold mt-1">4</div>
+        <div class="text-[11px] text-slate-400 mt-1">Need attention</div>
+      </div>
+
+      <div class="kpi-card bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div class="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-300 flex items-center justify-center"><i data-lucide="timer" class="w-[18px] h-[18px]"></i></div>
+          <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 rounded-full px-2 py-1">TARGET &lt; 25m</span>
+        </div>
+        <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">Avg ETA</div>
+        <div id="avgEta" class="text-2xl font-semibold mt-1">21 min</div>
+        <div class="text-[11px] text-slate-400 mt-1">Across active deliveries</div>
+      </div>
+    </div>
+
+    <!-- MAP + LIVE QUEUE -->
+    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.55fr)_390px] gap-5">
+      <section class="bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-semibold">Live Fleet Map</h2>
+              <span class="px-2 py-0.5 rounded-full bg-route-50 dark:bg-route-500/10 text-route-600 dark:text-route-300 text-[10px] font-semibold">REAL-TIME</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Riders, active orders and restaurant pickup points</p>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button class="mapFilter filter-control active-map-filter px-2.5 py-1.5 rounded-lg text-[11px] bg-route-600 text-white" data-map-filter="all">All</button>
+            <button class="mapFilter filter-control px-2.5 py-1.5 rounded-lg text-[11px] bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-300" data-map-filter="riders">Riders</button>
+            <button class="mapFilter filter-control px-2.5 py-1.5 rounded-lg text-[11px] bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-300" data-map-filter="orders">Orders</button>
+            <button class="mapFilter filter-control px-2.5 py-1.5 rounded-lg text-[11px] bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-300" data-map-filter="restaurants">Restaurants</button>
+          </div>
+        </div>
+
+        <div id="liveMap" class="live-map relative h-[500px] overflow-hidden">
+  <div class="map-grid"></div>
+
+  <!-- soft neighbourhood blocks -->
+  <div class="map-block" style="left:4%;top:7%;width:25%;height:29%"></div>
+  <div class="map-block" style="left:31%;top:7%;width:27%;height:22%"></div>
+  <div class="map-block" style="left:61%;top:8%;width:31%;height:25%"></div>
+  <div class="map-block" style="left:6%;top:42%;width:21%;height:23%"></div>
+  <div class="map-block" style="left:30%;top:35%;width:30%;height:27%"></div>
+  <div class="map-block" style="left:64%;top:38%;width:27%;height:23%"></div>
+  <div class="map-block" style="left:8%;top:70%;width:25%;height:22%"></div>
+  <div class="map-block" style="left:36%;top:67%;width:25%;height:25%"></div>
+  <div class="map-block" style="left:65%;top:68%;width:27%;height:22%"></div>
+
+  <div class="map-water water-one"></div>
+  <div class="map-water water-two"></div>
+
+  <!-- proper road network -->
+  <svg class="map-roads" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true">
+    <path class="map-road-outline" d="M0 115 C145 145 220 88 355 135 S625 205 1000 118"/>
+    <path class="map-road-main" d="M0 115 C145 145 220 88 355 135 S625 205 1000 118"/>
+
+    <path class="map-road-outline" d="M65 500 C120 405 210 330 320 290 S520 245 675 250 S850 300 1000 380"/>
+    <path class="map-road-main" d="M65 500 C120 405 210 330 320 290 S520 245 675 250 S850 300 1000 380"/>
+
+    <path class="map-road-outline" d="M300 0 C285 90 320 155 360 235 S430 395 470 500"/>
+    <path class="map-road-main" d="M300 0 C285 90 320 155 360 235 S430 395 470 500"/>
+
+    <path class="map-road-outline" d="M705 0 C650 105 635 180 690 255 S805 385 875 500"/>
+    <path class="map-road-main" d="M705 0 C650 105 635 180 690 255 S805 385 875 500"/>
+
+    <path class="map-road-secondary" d="M0 345 C170 320 270 335 410 375 S700 430 1000 315"/>
+    <path class="map-road-secondary" d="M155 0 C205 100 180 205 230 300 S320 415 350 500"/>
+    <path class="map-road-secondary" d="M515 0 C480 105 505 170 550 245 S615 380 600 500"/>
+    <path class="map-road-secondary" d="M1000 210 C875 225 810 215 710 175 S520 105 410 65"/>
+  </svg>
+
+  <div class="zone-label zone-a">Civil Lines</div>
+  <div class="zone-label zone-b">Wright Town</div>
+  <div class="zone-label zone-c">Napier Town</div>
+  <div class="zone-label zone-d">Vijay Nagar</div>
+  <div class="map-center-label">JABALPUR OPERATIONS GRID</div>
+
+  <div id="mapLayers"></div>
+
+  <div class="absolute left-4 bottom-4 z-20 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl px-3 py-2.5 text-white">
+    <div class="flex items-center gap-3 text-[10px]">
+      <span class="flex items-center gap-1.5"><span class="legend-dot rider-dot"></span> Rider</span>
+      <span class="flex items-center gap-1.5"><span class="legend-dot order-dot"></span> Active order</span>
+      <span class="flex items-center gap-1.5"><span class="legend-dot restaurant-dot"></span> Restaurant</span>
+    </div>
+  </div>
+
+  <div class="absolute right-4 bottom-4 z-20 flex flex-col gap-1.5">
+    <button id="zoomIn" class="map-control w-9 h-9 rounded-xl bg-white/90 dark:bg-[#16201c]/90 border border-slate-200 dark:border-white/10 shadow-lg flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></button>
+    <button id="zoomOut" class="map-control w-9 h-9 rounded-xl bg-white/90 dark:bg-[#16201c]/90 border border-slate-200 dark:border-white/10 shadow-lg flex items-center justify-center"><i data-lucide="minus" class="w-4 h-4"></i></button>
+    <button id="recenterMap" class="map-control w-9 h-9 rounded-xl bg-white/90 dark:bg-[#16201c]/90 border border-slate-200 dark:border-white/10 shadow-lg flex items-center justify-center"><i data-lucide="locate-fixed" class="w-4 h-4"></i></button>
+  </div>
+</div>
+</section>
+
+      <!-- LIVE ORDER QUEUE -->
+      <aside class="bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+        <div class="px-5 py-4 border-b border-slate-200 dark:border-white/10">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-semibold">Active Deliveries</h2>
+              <p class="text-[11px] text-slate-400 mt-1">Live orders requiring monitoring</p>
+            </div>
+            <span id="queueCount" class="text-xs font-semibold text-route-600 dark:text-route-300">18 active</span>
+          </div>
+          <div class="relative mt-3">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"></i>
+            <input id="queueSearch" class="w-full h-9 pl-9 pr-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none text-xs" placeholder="Search order or rider...">
+          </div>
+        </div>
+        <div id="activeOrderList" class="custom-scroll overflow-y-auto flex-1 max-h-[455px]"></div>
+      </aside>
+    </div>
+
+    <!-- RIDERS + ALERTS -->
+    <div class="grid grid-cols-1 xl:grid-cols-[1.25fr_.75fr] gap-5 mt-5">
+      <section class="bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
+          <div>
+            <h2 class="font-semibold">Rider Status</h2>
+            <p class="text-[11px] text-slate-400 mt-1">Current fleet availability</p>
+          </div>
+          <div class="flex items-center gap-3 text-[10px] text-slate-400">
+            <span><b id="availableCount" class="text-blue-600 dark:text-blue-300">9</b> Available</span>
+            <span><b id="deliveryCount" class="text-route-600 dark:text-route-300">18</b> Delivery</span>
+            <span><b id="offlineCount" class="text-slate-600 dark:text-slate-300">3</b> Offline</span>
+          </div>
+        </div>
+        <div id="riderGrid" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-2.5 p-4"></div>
+      </section>
+
+      <section class="bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
+          <div>
+            <h2 class="font-semibold">Delay Alerts</h2>
+            <p class="text-[11px] text-slate-400 mt-1">Exceptions detected by operations rules</p>
+          </div>
+          <span id="alertCount" class="px-2 py-1 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-300 text-[10px] font-semibold">4 active</span>
+        </div>
+        <div id="alertList" class="p-3 space-y-2 max-h-[420px] overflow-y-auto custom-scroll"></div>
+      </section>
+    </div>
+  </section>
+</main>
+
+
+<div id="toast" class="toast fixed bottom-5 right-5 z-[100] w-[330px] rounded-2xl bg-[#13231e] text-white p-4 shadow-2xl border border-white/10"><div class="flex gap-3"><div class="w-8 h-8 rounded-lg bg-route-500/20 text-route-300 flex items-center justify-center"><i data-lucide="check" class="w-4 h-4"></i></div><div><div id="toastTitle" class="text-sm font-semibold">Done</div><div id="toastText" class="text-xs text-white/55 mt-0.5"></div></div></div></div>
+
+<div id="modal" class="modal fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"><div class="modal-card transition-all duration-300 w-full max-w-lg bg-white dark:bg-[#16201c] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-5"><div class="flex items-center justify-between"><div><div class="text-[10px] uppercase tracking-wider text-slate-400">Order details</div><h3 id="modalTitle" class="text-lg font-semibold mt-1">#ORD-1001</h3></div><button id="closeModal" class="w-9 h-9 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center"><i data-lucide="x" class="w-5 h-5"></i></button></div><div id="modalContent" class="mt-5"></div></div></div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  lucide.createIcons();
+
+  /* =========================
+     DEMO LIVE DATA
+  ========================= */
+  const riders = [
+    {id:"R-201",name:"Rahul Sharma",status:"On Delivery",vehicle:"Bike",zone:"Civil Lines",x:18,y:31,order:"ORD-1024",eta:12},
+    {id:"R-202",name:"Sneha Yadav",status:"Available",vehicle:"Scooter",zone:"Wright Town",x:48,y:22,order:null,eta:null},
+    {id:"R-203",name:"Aman Verma",status:"On Delivery",vehicle:"Bike",zone:"Napier Town",x:64,y:54,order:"ORD-1048",eta:21},
+    {id:"R-204",name:"Pooja Singh",status:"On Delivery",vehicle:"Scooter",zone:"Vijay Nagar",x:76,y:34,order:"ORD-1056",eta:17},
+    {id:"R-205",name:"Karan Mehta",status:"Available",vehicle:"Bike",zone:"Wright Town",x:39,y:44,order:null,eta:null},
+    {id:"R-206",name:"Riya Verma",status:"Offline",vehicle:"Bike",zone:"Civil Lines",x:24,y:69,order:null,eta:null},
+    {id:"R-207",name:"Sahil Khan",status:"On Delivery",vehicle:"Scooter",zone:"Vijay Nagar",x:84,y:67,order:"ORD-1071",eta:28},
+    {id:"R-208",name:"Neha Patel",status:"Available",vehicle:"Bike",zone:"Napier Town",x:57,y:73,order:null,eta:null},
+    {id:"R-209",name:"Arjun Das",status:"On Delivery",vehicle:"Bike",zone:"Civil Lines",x:29,y:48,order:"ORD-1082",eta:15},
+    {id:"R-210",name:"Priya Nair",status:"Available",vehicle:"Scooter",zone:"Wright Town",x:69,y:17,order:null,eta:null},
+    {id:"R-211",name:"Vikas Jain",status:"On Delivery",vehicle:"Bike",zone:"Vijay Nagar",x:89,y:43,order:"ORD-1090",eta:19},
+    {id:"R-212",name:"Megha Joshi",status:"Available",vehicle:"Bike",zone:"Napier Town",x:43,y:81,order:null,eta:null},
+    {id:"R-213",name:"Nikhil Soni",status:"On Delivery",vehicle:"Scooter",zone:"Civil Lines",x:12,y:56,order:"ORD-1098",eta:23},
+    {id:"R-214",name:"Ayesha Khan",status:"Offline",vehicle:"Bike",zone:"Wright Town",x:61,y:12,order:null,eta:null},
+    {id:"R-215",name:"Rohit Kumar",status:"On Delivery",vehicle:"Bike",zone:"Vijay Nagar",x:73,y:79,order:"ORD-1107",eta:14},
+    {id:"R-216",name:"Divya Rao",status:"Available",vehicle:"Scooter",zone:"Civil Lines",x:8,y:24,order:null,eta:null},
+    {id:"R-217",name:"Mohit Gupta",status:"On Delivery",vehicle:"Bike",zone:"Napier Town",x:52,y:59,order:"ORD-1115",eta:26},
+    {id:"R-218",name:"Anjali Singh",status:"On Delivery",vehicle:"Scooter",zone:"Wright Town",x:35,y:15,order:"ORD-1121",eta:18},
+    {id:"R-219",name:"Dev Patel",status:"Available",vehicle:"Bike",zone:"Vijay Nagar",x:91,y:25,order:null,eta:null},
+    {id:"R-220",name:"Simran Kaur",status:"On Delivery",vehicle:"Bike",zone:"Napier Town",x:47,y:91,order:"ORD-1129",eta:22},
+    {id:"R-221",name:"Aditya Roy",status:"Available",vehicle:"Scooter",zone:"Civil Lines",x:16,y:84,order:null,eta:null},
+    {id:"R-222",name:"Kavya Shah",status:"On Delivery",vehicle:"Bike",zone:"Wright Town",x:79,y:57,order:"ORD-1137",eta:20},
+    {id:"R-223",name:"Varun Singh",status:"On Delivery",vehicle:"Bike",zone:"Vijay Nagar",x:68,y:88,order:"ORD-1142",eta:31},
+    {id:"R-224",name:"Ishita Jain",status:"Offline",vehicle:"Scooter",zone:"Napier Town",x:27,y:77,order:null,eta:null},
+    {id:"R-225",name:"Manish Tiwari",status:"Available",vehicle:"Bike",zone:"Civil Lines",x:55,y:37,order:null,eta:null},
+    {id:"R-226",name:"Tanvi Malhotra",status:"On Delivery",vehicle:"Scooter",zone:"Wright Town",x:87,y:73,order:"ORD-1151",eta:16},
+    {id:"R-227",name:"Rakesh Yadav",status:"Available",vehicle:"Bike",zone:"Vijay Nagar",x:32,y:91,order:null,eta:null},
+    {id:"R-228",name:"Sakshi Jain",status:"On Delivery",vehicle:"Bike",zone:"Napier Town",x:59,y:46,order:"ORD-1163",eta:24},
+    {id:"R-229",name:"Harsh Gupta",status:"On Delivery",vehicle:"Scooter",zone:"Civil Lines",x:22,y:39,order:"ORD-1170",eta:13},
+    {id:"R-230",name:"Nandini Rao",status:"Available",vehicle:"Bike",zone:"Wright Town",x:72,y:25,order:null,eta:null}
+  ];
+
+  const orders = [
+    {id:"ORD-1024",rider:"Rahul Sharma",restaurant:"Spice Hub",status:"On Delivery",eta:12,risk:"High",delay:12,zone:"Civil Lines",amount:428},
+    {id:"ORD-1048",rider:"Aman Verma",restaurant:"Domino's",status:"On Delivery",eta:21,risk:"Low",delay:0,zone:"Napier Town",amount:312},
+    {id:"ORD-1056",rider:"Pooja Singh",restaurant:"Burger King",status:"On Delivery",eta:17,risk:"Medium",delay:4,zone:"Vijay Nagar",amount:289},
+    {id:"ORD-1071",rider:"Sahil Khan",restaurant:"McDonald's",status:"Delayed",eta:28,risk:"High",delay:9,zone:"Vijay Nagar",amount:376},
+    {id:"ORD-1082",rider:"Arjun Das",restaurant:"Subway",status:"On Delivery",eta:15,risk:"Low",delay:0,zone:"Civil Lines",amount:245},
+    {id:"ORD-1090",rider:"Vikas Jain",restaurant:"Pizza Hut",status:"On Delivery",eta:19,risk:"Medium",delay:5,zone:"Vijay Nagar",amount:520},
+    {id:"ORD-1098",rider:"Nikhil Soni",restaurant:"KFC",status:"Delayed",eta:23,risk:"High",delay:12,zone:"Civil Lines",amount:410},
+    {id:"ORD-1107",rider:"Rohit Kumar",restaurant:"Taco Bell",status:"On Delivery",eta:14,risk:"Low",delay:0,zone:"Vijay Nagar",amount:332},
+    {id:"ORD-1115",rider:"Mohit Gupta",restaurant:"Starbucks",status:"On Delivery",eta:26,risk:"Medium",delay:3,zone:"Napier Town",amount:198},
+    {id:"ORD-1121",rider:"Anjali Singh",restaurant:"Baskin Robbins",status:"On Delivery",eta:18,risk:"Low",delay:0,zone:"Wright Town",amount:267},
+    {id:"ORD-1129",rider:"Simran Kaur",restaurant:"Cafe Coffee Day",status:"On Delivery",eta:22,risk:"Medium",delay:6,zone:"Napier Town",amount:215},
+    {id:"ORD-1137",rider:"Kavya Shah",restaurant:"Haldiram's",status:"On Delivery",eta:20,risk:"Low",delay:0,zone:"Wright Town",amount:488},
+    {id:"ORD-1142",rider:"Varun Singh",restaurant:"Barbeque Nation",status:"Delayed",eta:31,risk:"High",delay:14,zone:"Vijay Nagar",amount:760},
+    {id:"ORD-1151",rider:"Tanvi Malhotra",restaurant:"Wow! Momo",status:"On Delivery",eta:16,risk:"Low",delay:0,zone:"Wright Town",amount:284},
+    {id:"ORD-1163",rider:"Sakshi Jain",restaurant:"The Belgian Waffle Co.",status:"On Delivery",eta:24,risk:"Medium",delay:7,zone:"Napier Town",amount:352},
+    {id:"ORD-1170",rider:"Harsh Gupta",restaurant:"Shree Ganesha",status:"On Delivery",eta:13,risk:"Low",delay:0,zone:"Civil Lines",amount:221},
+    {id:"ORD-1178",rider:"Rahul Sharma",restaurant:"Behrouz Biryani",status:"Preparing",eta:9,risk:"Low",delay:0,zone:"Civil Lines",amount:449},
+    {id:"ORD-1184",rider:"Sneha Yadav",restaurant:"Faasos",status:"Pending",eta:0,risk:"Low",delay:0,zone:"Wright Town",amount:289},
+    {id:"ORD-1192",rider:"Aman Verma",restaurant:"Oven Story",status:"On Delivery",eta:29,risk:"High",delay:10,zone:"Napier Town",amount:398},
+    {id:"ORD-1201",rider:"Pooja Singh",restaurant:"Dosa Plaza",status:"On Delivery",eta:18,risk:"Low",delay:0,zone:"Vijay Nagar",amount:240}
+  ];
+
+  const restaurants = [
+    {name:"Spice Hub",x:11,y:21},{name:"Domino's",x:43,y:30},{name:"Burger King",x:73,y:18},
+    {name:"McDonald's",x:84,y:51},{name:"Subway",x:31,y:63},{name:"Pizza Hut",x:62,y:78},
+    {name:"KFC",x:18,y:47},{name:"Taco Bell",x:76,y:84}
+  ];
+
+  let mapFilter = "all";
+  let mapZoom = 1;
+  let searchQuery = "";
+
+  const avatar = name => name.split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase();
+  const riskClass = r => r === "High" ? "risk-high" : r === "Medium" ? "risk-medium" : "risk-low";
+  const statusClass = s => s === "Available" ? "status-available" : s === "Offline" ? "status-offline" : "status-delivery";
+
+  /* =========================
+     MAP
+  ========================= */
+  function renderMap() {
+    const layer = document.getElementById("mapLayers");
+    layer.innerHTML = "";
+
+    const addMarker = (x, y, className, icon, title, clickFn, type) => {
+      const el = document.createElement("div");
+      el.className = `map-marker ${className}`;
+      el.style.left = x + "%";
+      el.style.top = y + "%";
+      el.dataset.type = type;
+      el.title = title;
+      el.innerHTML = icon ? `<i data-lucide="${icon}"></i>` : "";
+      el.onclick = clickFn;
+      layer.appendChild(el);
+      return el;
+    };
+
+    // Restaurants first so they sit visually beneath moving fleet markers.
+    if (mapFilter === "all" || mapFilter === "restaurants") {
+      restaurants.forEach(r => {
+        addMarker(
+          r.x, r.y,
+          "restaurant-marker",
+          "store",
+          r.name,
+          () => showToast(r.name, "Restaurant pickup location"),
+          "restaurant"
+        );
+      });
+    }
+
+    // Faint route traces for active deliveries.
+    if (mapFilter === "all" || mapFilter === "riders" || mapFilter === "orders") {
+      riders.filter(r => r.status === "On Delivery" && r.order).forEach(r => {
+        const order = orders.find(o => o.id === r.order);
+        if (!order) return;
+
+        const restaurant = restaurants.find(x => x.name === order.restaurant);
+        if (!restaurant) return;
+
+        const dx = r.x - restaurant.x;
+        const dy = r.y - restaurant.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        const line = document.createElement("div");
+        line.className = "route-line";
+        line.style.left = restaurant.x + "%";
+        line.style.top = restaurant.y + "%";
+        line.style.width = Math.max(5, length) + "%";
+        line.style.transform = `rotate(${angle}deg)`;
+        layer.appendChild(line);
+      });
+    }
+
+    if (mapFilter === "all" || mapFilter === "riders") {
+      riders.forEach(r => {
+        const linkedOrder = r.order ? orders.find(o => o.id === r.order) : null;
+        const state = r.status === "On Delivery"
+          ? (linkedOrder && linkedOrder.risk === "High" ? "delayed" : "delivery")
+          : r.status.toLowerCase();
+
+        addMarker(
+          r.x, r.y,
+          `rider-marker ${state}`,
+          "bike",
+          `${r.name} • ${r.status}`,
+          () => showToast(r.name, `${r.status}${r.order ? " • " + r.order : ""}${r.eta ? " • ETA " + r.eta + " min" : ""}`),
+          "rider"
+        );
+
+        if (r.status === "On Delivery") {
+          const pulse = document.createElement("span");
+          pulse.className = "map-pulse";
+          pulse.style.left = r.x + "%";
+          pulse.style.top = r.y + "%";
+          layer.appendChild(pulse);
+        }
+      });
+    }
+
+    if (mapFilter === "all" || mapFilter === "orders") {
+      orders.filter(o => o.status === "On Delivery" || o.status === "Delayed").forEach(o => {
+        const rider = riders.find(r => r.order === o.id);
+        if (!rider) return;
+
+        // Small offset keeps the order dot readable next to its rider.
+        const ox = Math.min(96, Math.max(4, rider.x + (rider.x > 82 ? -3 : 3)));
+        const oy = Math.min(96, Math.max(4, rider.y + (rider.y > 82 ? -3 : 3)));
+
+        addMarker(
+          ox, oy,
+          `order-marker ${o.risk === "High" ? "high" : ""}`,
+          null,
+          `${o.id} • ${o.risk} risk`,
+          () => showToast(o.id, `${o.restaurant} • ${o.eta} min ETA • ${o.risk} risk`),
+          "order"
+        );
+      });
+    }
+
+    layer.style.transform = `scale(${mapZoom})`;
+    lucide.createIcons();
+  }
+
+  /* =========================
+     ACTIVE ORDERS
+  ========================= */
+  function renderActiveOrders() {
+    const list = document.getElementById("activeOrderList");
+    const q = searchQuery.toLowerCase();
+    const visible = orders.filter(o =>
+      (o.status === "On Delivery" || o.status === "Delayed") &&
+      `${o.id} ${o.rider} ${o.restaurant} ${o.zone}`.toLowerCase().includes(q)
+    );
+
+    document.getElementById("queueCount").textContent = `${visible.length} active`;
+
+    list.innerHTML = visible.map(o => `
+      <button class="live-order w-full text-left flex gap-3 px-4 py-3 border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[.025]" data-order="${o.id}">
+        <span class="risk-line ${riskClass(o.risk)}"></span>
+        <span class="min-w-0 flex-1">
+          <span class="flex items-center justify-between gap-2">
+            <span class="font-semibold text-xs">${o.id}</span>
+            <span class="status-pill ${o.status==="Delayed" ? "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-300" : "bg-route-50 dark:bg-route-500/10 text-route-600 dark:text-route-300"}">${o.status}</span>
+          </span>
+          <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">${o.restaurant} • ${o.rider}</span>
+          <span class="flex items-center justify-between mt-2 text-[10px]">
+            <span class="text-slate-400">${o.zone}</span>
+            <span class="${o.risk==="High" ? "text-red-600 dark:text-red-300 font-semibold" : "text-slate-500 dark:text-slate-300"}">${o.eta} min ETA</span>
+          </span>
+        </span>
+      </button>
+    `).join("") || `<div class="p-8 text-center text-xs text-slate-400">No active deliveries match your search.</div>`;
+
+    list.querySelectorAll("[data-order]").forEach(btn => {
+      btn.addEventListener("click", () => openOrder(btn.dataset.order));
+    });
+  }
+
+  /* =========================
+     RIDERS
+  ========================= */
+  function renderRiders() {
+    const grid = document.getElementById("riderGrid");
+    const q = searchQuery.toLowerCase();
+    const filtered = riders.filter(r => `${r.name} ${r.id} ${r.zone} ${r.status}`.toLowerCase().includes(q));
+
+    const counts = {
+      Available: riders.filter(r=>r.status==="Available").length,
+      "On Delivery": riders.filter(r=>r.status==="On Delivery").length,
+      Offline: riders.filter(r=>r.status==="Offline").length
+    };
+    document.getElementById("availableCount").textContent = counts.Available;
+    document.getElementById("deliveryCount").textContent = counts["On Delivery"];
+    document.getElementById("offlineCount").textContent = counts.Offline;
+
+    grid.innerHTML = filtered.slice(0,9).map(r => `
+      <button class="text-left border border-slate-200 dark:border-white/10 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-white/[.025] transition-all" data-rider="${r.id}">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-route-700 text-white flex items-center justify-center text-[10px] font-semibold">${avatar(r.name)}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-semibold truncate">${r.name}</span>
+              <span class="status-pill ${statusClass(r.status)}">${r.status}</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">${r.id} • ${r.vehicle} • ${r.zone}</div>
+          </div>
+        </div>
+        ${r.order ? `<div class="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[10px]"><span class="text-slate-400">${r.order}</span><span class="font-medium ${r.eta>25 ? "text-red-600 dark:text-red-300" : "text-slate-600 dark:text-slate-300"}">${r.eta} min</span></div>` : `<div class="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-white/5 text-[10px] text-slate-400">Waiting for assignment</div>`}
+      </button>
+    `).join("");
+
+    grid.querySelectorAll("[data-rider]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const r = riders.find(x=>x.id===btn.dataset.rider);
+        showToast(r.name, `${r.status} • ${r.vehicle} • ${r.zone}${r.order ? " • " + r.order : ""}`);
+      });
+    });
+  }
+
+  /* =========================
+     ALERTS
+  ========================= */
+  function renderAlerts() {
+    const list = document.getElementById("alertList");
+    const alerts = orders.filter(o=>o.risk==="High").map(o => ({
+      order:o,
+      message:o.delay >= 12 ? `${o.id} is running ${o.delay} min late` : `${o.id} has elevated delay risk`
+    }));
+
+    document.getElementById("alertCount").textContent = `${alerts.length} active`;
+
+    list.innerHTML = alerts.map(a => `
+      <button class="alert-item w-full text-left p-3 rounded-xl border border-red-100 dark:border-red-500/15 bg-red-50/60 dark:bg-red-500/[.045]" data-alert="${a.order.id}">
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-300 flex items-center justify-center shrink-0"><i data-lucide="triangle-alert" class="w-4 h-4"></i></div>
+          <div class="min-w-0">
+            <div class="text-xs font-semibold">${a.message}</div>
+            <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">${a.order.restaurant} • ${a.order.rider} • ETA ${a.order.eta} min</div>
+            <div class="mt-2 text-[10px] font-medium text-red-600 dark:text-red-300">High risk • Investigate</div>
+          </div>
+        </div>
+      </button>
+    `).join("");
+
+    lucide.createIcons();
+    list.querySelectorAll("[data-alert]").forEach(btn => btn.addEventListener("click",()=>openOrder(btn.dataset.alert)));
+  }
+
+  /* =========================
+     STATS
+  ========================= */
+  function updateStats() {
+    const active = orders.filter(o=>o.status==="On Delivery" || o.status==="Delayed");
+    const delayed = orders.filter(o=>o.status==="Delayed" || o.risk==="High");
+    const avg = Math.round(active.reduce((sum,o)=>sum+o.eta,0)/active.length);
+
+    document.getElementById("activeDeliveries").textContent = active.length;
+    document.getElementById("availableRiders").textContent = riders.filter(r=>r.status==="Available").length;
+    document.getElementById("delayedOrders").textContent = delayed.length;
+    document.getElementById("avgEta").textContent = `${avg} min`;
+  }
+
+  /* =========================
+     ORDER DETAILS
+  ========================= */
+  function openOrder(id) {
+    const o = orders.find(x=>x.id===id);
+    if (!o) return;
+    const r = riders.find(x=>x.name===o.rider);
+    showToast(o.id, `${o.restaurant} • ${o.rider} • ${o.status} • ETA ${o.eta} min`);
+    if (r) {
+      r.x = Math.max(4, Math.min(92, r.x));
+      r.y = Math.max(8, Math.min(90, r.y));
+    }
+  }
+
+  /* =========================
+     THEME — SAME DASHBOARD STYLE
+     ========================= */
+  const themeToggle = document.getElementById("themeToggle");
+  const root = document.documentElement;
+  const savedTheme = localStorage.getItem("routeiq-theme");
+  if (savedTheme === "dark") root.classList.add("dark");
+
+  function updateThemeIcons() {
+    const dark = root.classList.contains("dark");
+    const sun = document.getElementById("sunIcon");
+    const moon = document.getElementById("moonIcon");
+    if (sun) sun.style.opacity = dark ? ".45" : "1";
+    if (moon) moon.style.opacity = dark ? "1" : ".55";
+    lucide.createIcons();
+  }
+  updateThemeIcons();
+
+  function applyTheme() {
+    root.classList.toggle("dark");
+    localStorage.setItem("routeiq-theme", root.classList.contains("dark") ? "dark" : "light");
+    updateThemeIcons();
+  }
+
+  themeToggle.addEventListener("click", () => {
+    const rect = themeToggle.getBoundingClientRect();
+    root.style.setProperty("--theme-x", `${rect.left + rect.width/2}px`);
+    root.style.setProperty("--theme-y", `${rect.top + rect.height/2}px`);
+
+    themeToggle.animate(
+      [
+        {transform:"scale(1) rotate(0deg)"},
+        {transform:"scale(.92) rotate(-8deg)"},
+        {transform:"scale(1.05) rotate(5deg)"},
+        {transform:"scale(1) rotate(0deg)"}
+      ],
+      {duration:420,easing:"cubic-bezier(.22,1,.36,1)"}
+    );
+
+    if (document.startViewTransition) {
+      const t = document.startViewTransition(applyTheme);
+      t.finished.then(() => showToast(
+        root.classList.contains("dark") ? "Dark mode enabled" : "Light mode enabled",
+        "Theme preference saved."
+      ));
+    } else {
+      root.classList.add("theme-transition");
+      applyTheme();
+      setTimeout(() => root.classList.remove("theme-transition"), 520);
+      setTimeout(() => showToast(
+        root.classList.contains("dark") ? "Dark mode enabled" : "Light mode enabled",
+        "Theme preference saved."
+      ), 180);
+    }
+  });
+
+  /* =========================
+     MOBILE SIDEBAR
+  ========================= */
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+  const mobileMenu = document.getElementById("mobileMenu");
+  function closeSidebar(){ sidebar?.classList.remove("open"); overlay?.classList.remove("show"); overlay?.classList.add("hidden"); }
+  mobileMenu?.addEventListener("click",()=>{ sidebar?.classList.add("open"); overlay?.classList.remove("hidden"); overlay?.classList.add("show"); });
+  overlay?.addEventListener("click",closeSidebar);
+
+  /* =========================
+     NAVIGATION
+  ========================= */
+  document.querySelectorAll(".sidebar-item").forEach(btn => {
+    btn.addEventListener("click",()=>{
+      const page = btn.dataset.nav;
+      const routes = {
+        dashboard: "dashboard.html",
+        orders: "orders.html",
+        riders: "riders.html",
+        live: "liveoperations.html"
+      };
+
+      if (routes[page]) {
+        location.href = routes[page];
+        return;
+      }
+
+      showToast(btn.textContent.trim(), "This section is not available yet.");
+      closeSidebar();
+    });
+  });
+
+  /* =========================
+     SEARCH
+  ========================= */
+  function runSearch(q) {
+    searchQuery = q.toLowerCase().trim();
+    renderActiveOrders();
+    renderRiders();
+  }
+  document.getElementById("globalSearch")?.addEventListener("input", e => runSearch(e.target.value));
+  document.getElementById("queueSearch")?.addEventListener("input", e => runSearch(e.target.value));
+
+  /* =========================
+     MAP FILTER / ZOOM
+  ========================= */
+  document.querySelectorAll(".mapFilter").forEach(btn => {
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(".mapFilter").forEach(b=>{
+        b.classList.remove("bg-route-600","text-white","active-map-filter");
+        b.classList.add("bg-slate-100","dark:bg-white/5","text-slate-500","dark:text-slate-300");
+      });
+      btn.classList.add("bg-route-600","text-white","active-map-filter");
+      btn.classList.remove("bg-slate-100","dark:bg-white/5","text-slate-500","dark:text-slate-300");
+      mapFilter = btn.dataset.mapFilter;
+      renderMap();
+    });
+  });
+
+  document.getElementById("zoomIn").addEventListener("click",()=>{
+    mapZoom = Math.min(1.45, +(mapZoom + .1).toFixed(2));
+    renderMap();
+    showToast("Map zoomed in", `Zoom level ${Math.round(mapZoom*100)}%`);
+  });
+  document.getElementById("zoomOut").addEventListener("click",()=>{
+    mapZoom = Math.max(.85, +(mapZoom - .1).toFixed(2));
+    renderMap();
+    showToast("Map zoomed out", `Zoom level ${Math.round(mapZoom*100)}%`);
+  });
+  document.getElementById("recenterMap").addEventListener("click",()=>{
+    mapZoom = 1;
+    renderMap();
+    showToast("Map recentered","Live fleet view restored.");
+  });
+
+  /* =========================
+     REFRESH / LIVE SIMULATION
+  ========================= */
+  function refreshData() {
+    const button = document.getElementById("refreshBtn");
+    button.innerHTML = `<i data-lucide="loader-circle" class="w-4 h-4 animate-spin"></i>Refreshing`;
+    lucide.createIcons();
+
+    setTimeout(()=>{
+      orders.forEach(o=>{
+        if (o.status==="On Delivery" || o.status==="Delayed") {
+          const delta = Math.random() > .55 ? -1 : 0;
+          o.eta = Math.max(4, o.eta + delta);
+          if (o.risk==="High" && Math.random()>.7) o.delay += 1;
+        }
+      });
+      riders.filter(r=>r.status==="On Delivery").forEach(r=>{
+        r.x = Math.max(5, Math.min(93, r.x + (Math.random()-.5)*2.2));
+        r.y = Math.max(8, Math.min(92, r.y + (Math.random()-.5)*2.2));
+      });
+      renderMap(); renderActiveOrders(); renderRiders(); renderAlerts(); updateStats();
+      document.getElementById("lastUpdated").textContent = "Updated just now";
+      button.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh`;
+      lucide.createIcons();
+      showToast("Live data refreshed","Fleet positions and delivery ETAs updated.");
+    },700);
+  }
+  document.getElementById("refreshBtn").addEventListener("click",refreshData);
+
+  setInterval(()=>{
+    riders.filter(r=>r.status==="On Delivery").forEach(r=>{
+      r.x = Math.max(5, Math.min(93, r.x + (Math.random()-.5)*1.1));
+      r.y = Math.max(8, Math.min(92, r.y + (Math.random()-.5)*1.1));
+    });
+    orders.filter(o=>o.status==="On Delivery" || o.status==="Delayed").forEach(o=>{
+      if (o.eta > 5 && Math.random()>.55) o.eta -= 1;
+    });
+    renderMap(); renderActiveOrders(); updateStats();
+    document.getElementById("lastUpdated").textContent = "Updated just now";
+  }, 5000);
+
+  document.getElementById("notificationBtn").addEventListener("click",()=>{
+    showToast("4 active delay alerts","High-risk deliveries need operations attention.");
+  });
+
+  /* =========================
+     TOAST
+  ========================= */
+  let toastTimeout;
+  window.showToast = function(title,message){
+    const toast = document.getElementById("toast");
+    document.getElementById("toastTitle").textContent = title;
+    document.getElementById("toastMessage").textContent = message;
+    toast.classList.add("show");
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(()=>toast.classList.remove("show"),2800);
+  };
+
+  renderMap();
+  renderActiveOrders();
+  renderRiders();
+  renderAlerts();
+  updateStats();
+});
+</script>
+
+<script src="app-sidebar.js"></script>
+</body>
+</html>

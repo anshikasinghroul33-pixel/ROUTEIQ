@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>RouteIQ — Alerts</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class"
+    };
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition:
+        background-color 0.45s ease,
+        color 0.45s ease;
+    }
+
+    button,
+    a,
+    input,
+    select,
+    .card,
+    .alert-row,
+    .modal-panel {
+      transition:
+        background-color 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.25s ease,
+        opacity 0.25s ease;
+    }
+
+    .sidebar {
+      transition:
+        background-color 0.45s ease,
+        border-color 0.45s ease;
+    }
+
+    .alert-row:hover {
+      transform: translateY(-1px);
+    }
+
+    .modal-backdrop {
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-panel {
+      animation: modalIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .toast {
+      animation: toastIn 0.3s ease;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .severity-dot {
+      box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.08);
+    }
+
+    .green-dot {
+      box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.08);
+    }
+
+    @media (max-width: 900px) {
+      .desktop-sidebar {
+        display: none;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="../app-sidebar.css">
+</head>
+
+<body
+  class="bg-[#f6f8f7] text-slate-900 dark:bg-[#0b1714] dark:text-slate-100"
+>
+
+  <!-- =========================================================
+       SIDEBAR
+  ========================================================== -->
+
+  <aside
+    class="desktop-sidebar sidebar fixed left-0 top-0 z-40 flex h-screen w-[322px] flex-col border-r border-white/5 bg-[#0d241d] text-white"
+  >
+
+    <!-- Logo -->
+    <div class="flex items-center gap-4 px-7 py-7">
+
+      <img
+        src="../routeiq-logo.svg"
+        alt="RouteIQ"
+        class="h-12 w-12 object-contain"
+      />
+
+      <div>
+        <div class="text-[22px] font-semibold tracking-tight">
+          RouteIQ
+        </div>
+
+        <div class="mt-0.5 text-[13px] tracking-[0.16em] text-slate-400">
+          OPERATIONS
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- Navigation -->
+    <nav class="px-4 pt-7">
+
+      <a
+        href="dashboard.html"
+        class="group mb-2 flex items-center gap-4 rounded-xl px-5 py-4 text-[17px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span class="text-[21px]">▦</span>
+        Dashboard
+      </a>
+
+
+      <a
+        href="orders.html"
+        class="group mb-2 flex items-center gap-4 rounded-xl px-5 py-4 text-[17px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span class="text-[20px]">◈</span>
+        Orders
+      </a>
+
+
+      <a
+        href="riders.html"
+        class="group mb-2 flex items-center gap-4 rounded-xl px-5 py-4 text-[17px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span class="text-[20px]">♧</span>
+        Riders
+      </a>
+
+
+      <a
+        href="restaurant.html"
+        class="group mb-2 flex items-center gap-4 rounded-xl px-5 py-4 text-[17px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span class="text-[20px]">⌂</span>
+        Restaurants
+      </a>
+
+
+      <a
+        href="liveoperations.html"
+        class="group mb-2 flex items-center gap-4 rounded-xl px-5 py-4 text-[17px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span class="text-[20px]">◉</span>
+        Live Operations
+      </a>
+
+
+      <a
+        href="analytics.html"
+        class="group mb-2 flex items-center gap-4 rounded-xl px-5 py-4 text-[17px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span class="text-[20px]">⌁</span>
+        Analytics
+      </a>
+
+
+      <!-- Active -->
+      <a
+        href="alerts.html"
+        class="mb-2 flex items-center gap-4 rounded-xl bg-[#286b57] px-5 py-4 text-[17px] font-medium text-white shadow-lg shadow-black/10"
+      >
+        <span class="text-[20px]">♧</span>
+        Alerts
+
+        <span
+          id="sidebarAlertCount"
+          class="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white"
+        >
+          5
+        </span>
+      </a>
+
+    </nav>
+
+
+    <!-- Settings -->
+    <div class="mt-4 border-t border-white/10 px-4 pt-6">
+
+      <div class="mb-3 px-5 text-[11px] font-medium uppercase tracking-[0.2em] text-slate-500">
+        Settings
+      </div>
+
+
+      <button
+        class="flex w-full items-center gap-4 rounded-xl px-5 py-3.5 text-[16px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span>◎</span>
+        Profile
+      </button>
+
+
+      <button
+        class="flex w-full items-center gap-4 rounded-xl px-5 py-3.5 text-[16px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span>♧</span>
+        Notifications
+      </button>
+
+
+      <button
+        class="flex w-full items-center gap-4 rounded-xl px-5 py-3.5 text-[16px] text-slate-300 hover:bg-white/8 hover:text-white"
+      >
+        <span>⚙</span>
+        Settings
+      </button>
+
+    </div>
+
+
+    <!-- Bottom -->
+    <div class="mt-auto border-t border-white/10 px-7 py-7">
+
+      <div class="text-[13px] text-slate-500">
+        Smarter Deliveries
+      </div>
+
+      <div class="mt-1 text-[17px] font-semibold text-white">
+        Better Operations
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =========================================================
+       MAIN
+  ========================================================== -->
+
+  <main class="min-h-screen lg:ml-[322px]">
+
+    <!-- Top Bar -->
+    <header
+      class="sticky top-0 z-30 flex h-[84px] items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur dark:border-white/10 dark:bg-[#0b1714]/95 lg:px-10"
+    >
+
+      <!-- Search -->
+      <div
+        class="flex h-[52px] w-full max-w-[670px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 shadow-sm dark:border-white/10 dark:bg-[#12241f]"
+      >
+
+        <span class="text-xl text-slate-400">
+          ⌕
+        </span>
+
+        <input
+          id="globalSearch"
+          type="text"
+          placeholder="Search orders, restaurant, rider, or alert..."
+          class="w-full bg-transparent text-[16px] outline-none placeholder:text-slate-400 dark:text-white"
+        />
+
+        <span
+          class="hidden rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-400 dark:border-white/10 sm:block"
+        >
+          ⌘ K
+        </span>
+
+      </div>
+
+
+      <!-- Right controls -->
+      <div class="ml-5 flex items-center gap-4">
+
+        <!-- Notification -->
+        <button
+          id="notificationBtn"
+          class="relative rounded-xl p-3 text-2xl text-slate-700 hover:bg-slate-100 dark:text-white dark:hover:bg-white/10"
+        >
+          ♧
+
+          <span
+            id="notificationDot"
+            class="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500"
+          ></span>
+        </button>
+
+
+        <!-- Theme -->
+        <div
+          class="flex rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-white/10 dark:bg-[#172b25]"
+        >
+
+          <button
+            id="lightTheme"
+            class="theme-btn rounded-full px-4 py-2 text-lg"
+            title="Light mode"
+          >
+            ☼
+          </button>
+
+          <button
+            id="darkTheme"
+            class="theme-btn rounded-full px-4 py-2 text-lg"
+            title="Dark mode"
+          >
+            ☾
+          </button>
+
+        </div>
+
+
+        <!-- Profile -->
+        <div class="hidden items-center gap-3 border-l border-slate-200 pl-5 dark:border-white/10 sm:flex">
+
+          <div
+            class="flex h-11 w-11 items-center justify-center rounded-full bg-[#215c4b] font-semibold text-white"
+          >
+            AS
+          </div>
+
+          <div class="hidden xl:block">
+            <div class="text-sm font-semibold">
+              Anshika Singhroul
+            </div>
+
+            <div class="text-xs text-slate-400">
+              Operations Manager
+            </div>
+          </div>
+
+          <span class="text-slate-400">
+            ⌄
+          </span>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- Content -->
+    <section class="px-6 py-8 lg:px-10 lg:py-10">
+
+      <!-- Heading -->
+      <div class="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+
+        <div>
+
+          <div class="mb-2 flex items-center gap-2 text-sm font-medium text-[#27725d] dark:text-[#63b99f]">
+            <span>⌁</span>
+            Operations
+            <span>/</span>
+            Alerts
+          </div>
+
+          <h1 class="text-4xl font-semibold tracking-tight lg:text-[48px]">
+            Alerts
+          </h1>
+
+          <p class="mt-2 text-[17px] text-slate-500 dark:text-slate-400">
+            Monitor delivery exceptions and operational issues that need attention.
+          </p>
+
+        </div>
+
+
+        <button
+          id="refreshBtn"
+          class="flex items-center justify-center gap-2 rounded-xl bg-[#286b57] px-6 py-3.5 font-semibold text-white shadow-sm hover:bg-[#215c4b] active:scale-[0.98]"
+        >
+          <span id="refreshIcon">↻</span>
+          Refresh
+        </button>
+
+      </div>
+
+
+      <!-- =====================================================
+           STATS
+      ====================================================== -->
+
+      <div class="mb-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+
+        <!-- Total -->
+        <div
+          class="card rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#12241f]"
+        >
+
+          <div class="flex items-start justify-between">
+
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-xl dark:bg-white/10"
+            >
+              !
+            </div>
+
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+              Today
+            </span>
+
+          </div>
+
+          <div class="mt-7 text-sm text-slate-500 dark:text-slate-400">
+            Total Alerts
+          </div>
+
+          <div
+            id="totalAlerts"
+            class="mt-1 text-3xl font-semibold"
+          >
+            8
+          </div>
+
+          <div class="mt-2 text-xs text-slate-400">
+            Across operations
+          </div>
+
+        </div>
+
+
+        <!-- Critical -->
+        <div
+          class="card rounded-2xl border border-red-100 bg-white p-6 shadow-sm dark:border-red-900/40 dark:bg-[#12241f]"
+        >
+
+          <div class="flex items-start justify-between">
+
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-xl text-red-500 dark:bg-red-500/10"
+            >
+              !
+            </div>
+
+            <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500 dark:bg-red-500/10">
+              Critical
+            </span>
+
+          </div>
+
+          <div class="mt-7 text-sm text-slate-500 dark:text-slate-400">
+            Critical
+          </div>
+
+          <div
+            id="criticalAlerts"
+            class="mt-1 text-3xl font-semibold"
+          >
+            2
+          </div>
+
+          <div class="mt-2 text-xs text-slate-400">
+            Immediate attention
+          </div>
+
+        </div>
+
+
+        <!-- High -->
+        <div
+          class="card rounded-2xl border border-orange-100 bg-white p-6 shadow-sm dark:border-orange-900/40 dark:bg-[#12241f]"
+        >
+
+          <div class="flex items-start justify-between">
+
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-xl text-orange-500 dark:bg-orange-500/10"
+            >
+              ▲
+            </div>
+
+            <span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-500 dark:bg-orange-500/10">
+              High
+            </span>
+
+          </div>
+
+          <div class="mt-7 text-sm text-slate-500 dark:text-slate-400">
+            High Priority
+          </div>
+
+          <div
+            id="highAlerts"
+            class="mt-1 text-3xl font-semibold"
+          >
+            3
+          </div>
+
+          <div class="mt-2 text-xs text-slate-400">
+            Needs attention
+          </div>
+
+        </div>
+
+
+        <!-- Resolved -->
+        <div
+          class="card rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm dark:border-emerald-900/40 dark:bg-[#12241f]"
+        >
+
+          <div class="flex items-start justify-between">
+
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-xl text-emerald-600 dark:bg-emerald-500/10"
+            >
+              ✓
+            </div>
+
+            <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 dark:bg-emerald-500/10">
+              Resolved
+            </span>
+
+          </div>
+
+          <div class="mt-7 text-sm text-slate-500 dark:text-slate-400">
+            Resolved
+          </div>
+
+          <div
+            id="resolvedAlerts"
+            class="mt-1 text-3xl font-semibold"
+          >
+            2
+          </div>
+
+          <div class="mt-2 text-xs text-slate-400">
+            Issues handled
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================================
+           FILTERS + ALERT LIST
+      ====================================================== -->
+
+      <div
+        class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#12241f]"
+      >
+
+        <!-- Toolbar -->
+        <div
+          class="border-b border-slate-200 p-5 dark:border-white/10 lg:p-6"
+        >
+
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-2">
+
+              <button
+                class="filter-btn active-filter rounded-lg bg-[#286b57] px-4 py-2.5 text-sm font-medium text-white"
+                data-filter="All"
+              >
+                All
+              </button>
+
+              <button
+                class="filter-btn rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                data-filter="Active"
+              >
+                Active
+              </button>
+
+              <button
+                class="filter-btn rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                data-filter="Resolved"
+              >
+                Resolved
+              </button>
+
+              <button
+                class="filter-btn rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                data-filter="Critical"
+              >
+                Critical
+              </button>
+
+              <button
+                class="filter-btn rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                data-filter="High"
+              >
+                High
+              </button>
+
+              <button
+                class="filter-btn rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                data-filter="Medium"
+              >
+                Medium
+              </button>
+
+            </div>
+
+
+            <!-- Search -->
+            <div
+              class="flex h-11 w-full max-w-[380px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 dark:border-white/10 dark:bg-[#0d1d19]"
+            >
+
+              <span class="text-lg text-slate-400">
+                ⌕
+              </span>
+
+              <input
+                id="alertSearch"
+                type="text"
+                placeholder="Search alerts..."
+                class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- List Header -->
+        <div
+          class="hidden grid-cols-[1.8fr_1fr_1fr_0.8fr_0.8fr_1fr_1.1fr] gap-4 border-b border-slate-200 px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:border-white/10 lg:grid"
+        >
+          <div>Alert</div>
+          <div>Reference</div>
+          <div>Type</div>
+          <div>Severity</div>
+          <div>Time</div>
+          <div>Status</div>
+          <div class="text-right">Action</div>
+        </div>
+
+
+        <!-- Dynamic alerts -->
+        <div id="alertsList"></div>
+
+
+        <!-- Empty -->
+        <div
+          id="emptyState"
+          class="hidden px-6 py-16 text-center"
+        >
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl text-slate-400 dark:bg-white/10">
+            ✓
+          </div>
+
+          <h3 class="text-lg font-semibold">
+            No alerts found
+          </h3>
+
+          <p class="mt-1 text-sm text-slate-400">
+            Try another filter or search term.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================================================
+       ALERT DETAILS MODAL
+  ========================================================== -->
+
+  <div
+    id="alertModal"
+    class="modal-backdrop fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+  >
+
+    <div
+      class="modal-panel w-full max-w-[650px] rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#12241f]"
+    >
+
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-slate-200 p-6 dark:border-white/10">
+
+        <div>
+
+          <div
+            id="modalSeverity"
+            class="mb-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold"
+          >
+            HIGH
+          </div>
+
+          <h2
+            id="modalTitle"
+            class="text-2xl font-semibold"
+          >
+            Delivery delayed
+          </h2>
+
+          <p
+            id="modalReference"
+            class="mt-1 text-sm text-slate-400"
+          >
+            ORD-1024
+          </p>
+
+        </div>
+
+
+        <button
+          id="closeModal"
+          class="rounded-xl p-2 text-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- Modal Body -->
+      <div class="p-6">
+
+        <div class="mb-6 rounded-2xl bg-slate-50 p-5 dark:bg-[#0d1d19]">
+
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            What happened?
+          </div>
+
+          <p
+            id="modalDescription"
+            class="mt-2 leading-6 text-slate-700 dark:text-slate-200"
+          >
+            Order is running behind its expected delivery time.
+          </p>
+
+        </div>
+
+
+        <div class="grid gap-4 sm:grid-cols-2">
+
+          <div>
+            <div class="text-xs text-slate-400">
+              Expected ETA
+            </div>
+
+            <div
+              id="modalExpected"
+              class="mt-1 font-semibold"
+            >
+              8:35 PM
+            </div>
+          </div>
+
+
+          <div>
+            <div class="text-xs text-slate-400">
+              Current ETA
+            </div>
+
+            <div
+              id="modalCurrent"
+              class="mt-1 font-semibold text-red-500"
+            >
+              8:49 PM
+            </div>
+          </div>
+
+
+          <div>
+            <div class="text-xs text-slate-400">
+              Delay
+            </div>
+
+            <div
+              id="modalDelay"
+              class="mt-1 font-semibold"
+            >
+              14 min
+            </div>
+          </div>
+
+
+          <div>
+            <div class="text-xs text-slate-400">
+              Rider
+            </div>
+
+            <div
+              id="modalRider"
+              class="mt-1 font-semibold"
+            >
+              R-018
+            </div>
+          </div>
+
+
+          <div>
+            <div class="text-xs text-slate-400">
+              Restaurant
+            </div>
+
+            <div
+              id="modalRestaurant"
+              class="mt-1 font-semibold"
+            >
+              Spice Hub
+            </div>
+          </div>
+
+
+          <div>
+            <div class="text-xs text-slate-400">
+              Alert Type
+            </div>
+
+            <div
+              id="modalType"
+              class="mt-1 font-semibold"
+            >
+              Delay
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- Reason -->
+        <div class="mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-900/40 dark:bg-orange-500/10">
+
+          <div class="text-xs font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+            Reason
+          </div>
+
+          <div
+            id="modalReason"
+            class="mt-1 text-sm text-orange-800 dark:text-orange-200"
+          >
+            High preparation time
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- Modal Footer -->
+      <div class="flex flex-col gap-3 border-t border-slate-200 p-6 dark:border-white/10 sm:flex-row sm:justify-end">
+
+        <button
+          id="viewOrderBtn"
+          class="rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/10"
+        >
+          View Order
+        </button>
+
+        <button
+          id="resolveBtn"
+          class="rounded-xl bg-[#286b57] px-5 py-3 font-semibold text-white hover:bg-[#215c4b]"
+        >
+          Mark as Resolved
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
+       TOAST
+  ========================================================== -->
+
+  <div
+    id="toast"
+    class="toast fixed bottom-6 right-6 z-[200] hidden max-w-[360px] rounded-2xl bg-[#0d241d] px-5 py-4 text-white shadow-2xl"
+  >
+
+    <div class="flex items-center gap-3">
+
+      <div
+        class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300"
+      >
+        ✓
+      </div>
+
+      <div>
+        <div
+          id="toastTitle"
+          class="font-semibold"
+        >
+          Done
+        </div>
+
+        <div
+          id="toastMessage"
+          class="mt-0.5 text-sm text-slate-300"
+        >
+          Alert updated successfully.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
+       JAVASCRIPT
+  ========================================================== -->
+
+  <script>
+
+    /* =========================================================
+       DEMO ALERT DATA
+    ========================================================== */
+
+    const alerts = [
+
+      {
+        id: "ALT-001",
+        title: "Delivery delayed",
+        reference: "ORD-1024",
+        type: "Delay",
+        severity: "Critical",
+        time: "8:42 PM",
+        status: "Active",
+        description:
+          "Order is running significantly behind its expected delivery time.",
+        expected: "8:35 PM",
+        current: "8:49 PM",
+        delay: "14 min",
+        rider: "R-018",
+        restaurant: "Spice Hub",
+        reason: "High preparation time"
+      },
+
+      {
+        id: "ALT-002",
+        title: "Delivery delay risk detected",
+        reference: "ORD-1071",
+        type: "Delay",
+        severity: "Critical",
+        time: "8:36 PM",
+        status: "Active",
+        description:
+          "Route conditions and current rider progress indicate an elevated delay risk.",
+        expected: "8:41 PM",
+        current: "8:53 PM",
+        delay: "12 min",
+        rider: "R-204",
+        restaurant: "Urban Bites",
+        reason: "Route congestion"
+      },
+
+      {
+        id: "ALT-003",
+        title: "Prep time exceeded",
+        reference: "ORD-1018",
+        type: "Restaurant",
+        severity: "High",
+        time: "8:20 PM",
+        status: "Resolved",
+        description:
+          "Restaurant preparation time exceeded the expected preparation window.",
+        expected: "8:22 PM",
+        current: "8:34 PM",
+        delay: "12 min",
+        rider: "R-091",
+        restaurant: "The Curry House",
+        reason: "Preparation time exceeded"
+      },
+
+      {
+        id: "ALT-004",
+        title: "Rider inactive",
+        reference: "RID-018",
+        type: "Rider",
+        severity: "Medium",
+        time: "8:35 PM",
+        status: "Active",
+        description:
+          "No recent location update was received from the assigned rider.",
+        expected: "8:30 PM",
+        current: "8:35 PM",
+        delay: "5 min",
+        rider: "R-018",
+        restaurant: "Spice Hub",
+        reason: "No recent location update"
+      },
+
+      {
+        id: "ALT-005",
+        title: "Restaurant preparation delay",
+        reference: "ORD-1098",
+        type: "Restaurant",
+        severity: "High",
+        time: "8:12 PM",
+        status: "Active",
+        description:
+          "Preparation is taking longer than the operational threshold.",
+        expected: "8:20 PM",
+        current: "8:31 PM",
+        delay: "11 min",
+        rider: "R-112",
+        restaurant: "Food Lab",
+        reason: "High preparation workload"
+      },
+
+      {
+        id: "ALT-006",
+        title: "Rider utilization below threshold",
+        reference: "RID-104",
+        type: "Rider",
+        severity: "Medium",
+        time: "7:58 PM",
+        status: "Active",
+        description:
+          "Rider has remained available for longer than the expected assignment window.",
+        expected: "7:55 PM",
+        current: "8:03 PM",
+        delay: "8 min",
+        rider: "R-104",
+        restaurant: "Burger Hub",
+        reason: "Low assignment availability"
+      },
+
+      {
+        id: "ALT-007",
+        title: "Delivery delay resolved",
+        reference: "ORD-983",
+        type: "Delay",
+        severity: "High",
+        time: "7:44 PM",
+        status: "Resolved",
+        description:
+          "Previously delayed delivery returned within its expected delivery window.",
+        expected: "7:50 PM",
+        current: "7:49 PM",
+        delay: "0 min",
+        rider: "R-087",
+        restaurant: "Green Plate",
+        reason: "Delay resolved"
+      },
+
+      {
+        id: "ALT-008",
+        title: "Order approaching ETA threshold",
+        reference: "ORD-1102",
+        type: "Delay",
+        severity: "Medium",
+        time: "7:32 PM",
+        status: "Active",
+        description:
+          "Current delivery progress indicates the order is approaching its ETA threshold.",
+        expected: "7:40 PM",
+        current: "7:47 PM",
+        delay: "7 min",
+        rider: "R-126",
+        restaurant: "Cafe Nova",
+        reason: "Route slowdown"
+      }
+
+    ];
+
+
+    /* =========================================================
+       ELEMENTS
+    ========================================================== */
+
+    const alertsList =
+      document.getElementById("alertsList");
+
+    const emptyState =
+      document.getElementById("emptyState");
+
+    const alertSearch =
+      document.getElementById("alertSearch");
+
+    const globalSearch =
+      document.getElementById("globalSearch");
+
+    const filterButtons =
+      document.querySelectorAll(".filter-btn");
+
+    const alertModal =
+      document.getElementById("alertModal");
+
+    const closeModal =
+      document.getElementById("closeModal");
+
+    const resolveBtn =
+      document.getElementById("resolveBtn");
+
+    const viewOrderBtn =
+      document.getElementById("viewOrderBtn");
+
+    let activeFilter = "All";
+    let selectedAlert = null;
+
+
+    /* =========================================================
+       SEVERITY HELPERS
+    ========================================================== */
+
+    function severityClass(severity) {
+
+      if (severity === "Critical") {
+        return {
+          badge:
+            "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400",
+          dot:
+            "bg-red-500"
+        };
+      }
+
+      if (severity === "High") {
+        return {
+          badge:
+            "bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400",
+          dot:
+            "bg-orange-500"
+        };
+      }
+
+      return {
+        badge:
+          "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400",
+        dot:
+          "bg-amber-500"
+      };
+    }
+
+
+    function statusClass(status) {
+
+      if (status === "Resolved") {
+        return "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400";
+      }
+
+      return "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400";
+    }
+
+
+    /* =========================================================
+       RENDER ALERTS
+    ========================================================== */
+
+    function renderAlerts() {
+
+      const search =
+        alertSearch.value.trim().toLowerCase();
+
+      const filtered =
+        alerts.filter(alert => {
+
+          const matchesFilter =
+            activeFilter === "All" ||
+            alert.status === activeFilter ||
+            alert.severity === activeFilter;
+
+          const searchableText =
+            `
+              ${alert.title}
+              ${alert.reference}
+              ${alert.type}
+              ${alert.severity}
+              ${alert.status}
+              ${alert.rider}
+              ${alert.restaurant}
+            `.toLowerCase();
+
+          const matchesSearch =
+            searchableText.includes(search);
+
+          return matchesFilter && matchesSearch;
+
+        });
+
+
+      alertsList.innerHTML = "";
+
+
+      if (filtered.length === 0) {
+
+        emptyState.classList.remove("hidden");
+
+        return;
+
+      }
+
+
+      emptyState.classList.add("hidden");
+
+
+      filtered.forEach(alert => {
+
+        const severity =
+          severityClass(alert.severity);
+
+
+        const row =
+          document.createElement("div");
+
+        row.className =
+          `
+          alert-row
+          cursor-pointer
+          border-b border-slate-200
+          px-6 py-5
+          hover:bg-slate-50
+          dark:border-white/10
+          dark:hover:bg-white/[0.025]
+          last:border-b-0
+          `;
+
+
+        row.innerHTML =
+          `
+
+          <!-- Desktop -->
+          <div class="hidden lg:grid lg:grid-cols-[1.8fr_1fr_1fr_0.8fr_0.8fr_1fr_1.1fr] lg:items-center lg:gap-4">
+
+            <div class="flex items-center gap-4">
+
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${severity.badge}"
+              >
+                !
+              </div>
+
+              <div>
+
+                <div class="font-semibold">
+                  ${alert.title}
+                </div>
+
+                <div class="mt-1 text-xs text-slate-400">
+                  ${alert.description}
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="text-sm font-medium">
+              ${alert.reference}
+            </div>
+
+
+            <div class="text-sm text-slate-500 dark:text-slate-400">
+              ${alert.type}
+            </div>
+
+
+            <div>
+              <span
+                class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${severity.badge}"
+              >
+                <span class="h-1.5 w-1.5 rounded-full ${severity.dot}"></span>
+                ${alert.severity}
+              </span>
+            </div>
+
+
+            <div class="text-sm text-slate-500 dark:text-slate-400">
+              ${alert.time}
+            </div>
+
+
+            <div>
+              <span
+                class="rounded-full px-3 py-1 text-xs font-semibold ${statusClass(alert.status)}"
+              >
+                ${alert.status}
+              </span>
+            </div>
+
+
+            <div class="text-right">
+
+              <button
+                class="view-alert rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10"
+                data-id="${alert.id}"
+              >
+                View details
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- Mobile -->
+          <div class="lg:hidden">
+
+            <div class="flex items-start justify-between gap-4">
+
+              <div class="flex items-start gap-3">
+
+                <div
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${severity.badge}"
+                >
+                  !
+                </div>
+
+                <div>
+
+                  <div class="font-semibold">
+                    ${alert.title}
+                  </div>
+
+                  <div class="mt-1 text-xs text-slate-400">
+                    ${alert.reference} · ${alert.type}
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <span
+                class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${statusClass(alert.status)}"
+              >
+                ${alert.status}
+              </span>
+
+            </div>
+
+
+            <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+
+              <div>
+                <div class="text-xs text-slate-400">
+                  Severity
+                </div>
+
+                <div class="mt-1 font-medium">
+                  ${alert.severity}
+                </div>
+              </div>
+
+
+              <div>
+                <div class="text-xs text-slate-400">
+                  Time
+                </div>
+
+                <div class="mt-1 font-medium">
+                  ${alert.time}
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        `;
+
+
+        row.addEventListener("click", (event) => {
+
+          if (
+            event.target.closest(".view-alert") ||
+            !event.target.closest("button")
+          ) {
+            openModal(alert);
+          }
+
+        });
+
+
+        alertsList.appendChild(row);
+
+      });
+
+
+      document
+        .querySelectorAll(".view-alert")
+        .forEach(button => {
+
+          button.addEventListener("click", (event) => {
+
+            event.stopPropagation();
+
+            const alert =
+              alerts.find(
+                item =>
+                  item.id === button.dataset.id
+              );
+
+            openModal(alert);
+
+          });
+
+        });
+
+    }
+
+
+    /* =========================================================
+       STATS
+    ========================================================== */
+
+    function updateStats() {
+
+      const total =
+        alerts.length;
+
+      const critical =
+        alerts.filter(
+          a => a.severity === "Critical" &&
+               a.status === "Active"
+        ).length;
+
+      const high =
+        alerts.filter(
+          a => a.severity === "High" &&
+               a.status === "Active"
+        ).length;
+
+      const resolved =
+        alerts.filter(
+          a => a.status === "Resolved"
+        ).length;
+
+      document.getElementById("totalAlerts").textContent =
+        total;
+
+      document.getElementById("criticalAlerts").textContent =
+        critical;
+
+      document.getElementById("highAlerts").textContent =
+        high;
+
+      document.getElementById("resolvedAlerts").textContent =
+        resolved;
+
+      document.getElementById("sidebarAlertCount").textContent =
+        critical + high;
+
+    }
+
+
+    /* =========================================================
+       FILTERS
+    ========================================================== */
+
+    filterButtons.forEach(button => {
+
+      button.addEventListener("click", () => {
+
+        activeFilter =
+          button.dataset.filter;
+
+
+        filterButtons.forEach(btn => {
+
+          btn.classList.remove(
+            "bg-[#286b57]",
+            "text-white"
+          );
+
+          btn.classList.add(
+            "bg-slate-100",
+            "text-slate-600",
+            "dark:bg-white/10",
+            "dark:text-slate-300"
+          );
+
+        });
+
+
+        button.classList.remove(
+          "bg-slate-100",
+          "text-slate-600",
+          "dark:bg-white/10",
+          "dark:text-slate-300"
+        );
+
+        button.classList.add(
+          "bg-[#286b57]",
+          "text-white"
+        );
+
+
+        renderAlerts();
+
+      });
+
+    });
+
+
+    /* =========================================================
+       SEARCH
+    ========================================================== */
+
+    alertSearch.addEventListener(
+      "input",
+      renderAlerts
+    );
+
+
+    globalSearch.addEventListener(
+      "input",
+      () => {
+
+        alertSearch.value =
+          globalSearch.value;
+
+        renderAlerts();
+
+      }
+    );
+
+
+    /* =========================================================
+       OPEN MODAL
+    ========================================================== */
+
+    function openModal(alert) {
+
+      selectedAlert = alert;
+
+      const severity =
+        severityClass(alert.severity);
+
+
+      document.getElementById("modalSeverity").textContent =
+        alert.severity.toUpperCase();
+
+      document.getElementById("modalSeverity").className =
+        `mb-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${severity.badge}`;
+
+
+      document.getElementById("modalTitle").textContent =
+        alert.title;
+
+      document.getElementById("modalReference").textContent =
+        `${alert.reference} · ${alert.id}`;
+
+      document.getElementById("modalDescription").textContent =
+        alert.description;
+
+      document.getElementById("modalExpected").textContent =
+        alert.expected;
+
+      document.getElementById("modalCurrent").textContent =
+        alert.current;
+
+      document.getElementById("modalDelay").textContent =
+        alert.delay;
+
+      document.getElementById("modalRider").textContent =
+        alert.rider;
+
+      document.getElementById("modalRestaurant").textContent =
+        alert.restaurant;
+
+      document.getElementById("modalType").textContent =
+        alert.type;
+
+      document.getElementById("modalReason").textContent =
+        alert.reason;
+
+
+      if (alert.status === "Resolved") {
+
+        resolveBtn.textContent =
+          "Already Resolved";
+
+        resolveBtn.disabled =
+          true;
+
+        resolveBtn.classList.add(
+          "cursor-not-allowed",
+          "opacity-50"
+        );
+
+      } else {
+
+        resolveBtn.textContent =
+          "Mark as Resolved";
+
+        resolveBtn.disabled =
+          false;
+
+        resolveBtn.classList.remove(
+          "cursor-not-allowed",
+          "opacity-50"
+        );
+
+      }
+
+
+      alertModal.classList.remove("hidden");
+
+      alertModal.classList.add("flex");
+
+      document.body.style.overflow =
+        "hidden";
+
+    }
+
+
+    /* =========================================================
+       CLOSE MODAL
+    ========================================================== */
+
+    function closeAlertModal() {
+
+      alertModal.classList.add("hidden");
+
+      alertModal.classList.remove("flex");
+
+      document.body.style.overflow =
+        "";
+
+      selectedAlert = null;
+
+    }
+
+
+    closeModal.addEventListener(
+      "click",
+      closeAlertModal
+    );
+
+
+    alertModal.addEventListener(
+      "click",
+      event => {
+
+        if (
+          event.target === alertModal
+        ) {
+          closeAlertModal();
+        }
+
+      }
+    );
+
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Escape" &&
+          !alertModal.classList.contains("hidden")
+        ) {
+          closeAlertModal();
+        }
+
+      }
+    );
+
+
+    /* =========================================================
+       RESOLVE ALERT
+    ========================================================== */
+
+    resolveBtn.addEventListener(
+      "click",
+      () => {
+
+        if (!selectedAlert) {
+          return;
+        }
+
+
+        selectedAlert.status =
+          "Resolved";
+
+
+        updateStats();
+
+        renderAlerts();
+
+        closeAlertModal();
+
+        showToast(
+          "Alert resolved",
+          `${selectedAlert?.reference || "Alert"} has been marked as resolved.`
+        );
+
+      }
+    );
+
+
+    /* =========================================================
+       VIEW ORDER
+    ========================================================== */
+
+    viewOrderBtn.addEventListener(
+      "click",
+      () => {
+
+        if (!selectedAlert) {
+          return;
+        }
+
+
+        const orderReference =
+          selectedAlert.reference;
+
+
+        closeAlertModal();
+
+
+        if (
+          orderReference.startsWith("ORD-")
+        ) {
+
+          window.location.href =
+            "orders.html";
+
+        } else {
+
+          showToast(
+            "Rider alert",
+            "This alert is related to a rider rather than an order."
+          );
+
+        }
+
+      }
+    );
+
+
+    /* =========================================================
+       REFRESH
+    ========================================================== */
+
+    document.getElementById("refreshBtn")
+      .addEventListener("click", () => {
+
+        const icon =
+          document.getElementById("refreshIcon");
+
+        icon.classList.add("inline-block");
+
+        icon.style.transform =
+          "rotate(360deg)";
+
+
+        setTimeout(() => {
+
+          icon.style.transform =
+            "";
+
+          showToast(
+            "Updated",
+            "Alert data has been refreshed."
+          );
+
+        }, 500);
+
+      });
+
+
+    /* =========================================================
+       NOTIFICATION
+    ========================================================== */
+
+    document.getElementById("notificationBtn")
+      .addEventListener("click", () => {
+
+        document
+          .getElementById("notificationDot")
+          .classList.add("hidden");
+
+        showToast(
+          "Notifications",
+          "You are viewing the latest operational alerts."
+        );
+
+      });
+
+
+    /* =========================================================
+       TOAST
+    ========================================================== */
+
+    let toastTimer;
+
+    function showToast(
+      title,
+      message
+    ) {
+
+      const toast =
+        document.getElementById("toast");
+
+      document.getElementById("toastTitle")
+        .textContent =
+        title;
+
+      document.getElementById("toastMessage")
+        .textContent =
+        message;
+
+
+      toast.classList.remove("hidden");
+
+
+      clearTimeout(toastTimer);
+
+
+      toastTimer =
+        setTimeout(() => {
+
+          toast.classList.add("hidden");
+
+        }, 3000);
+
+    }
+
+
+    /* =========================================================
+       THEME
+    ========================================================== */
+
+    const lightTheme =
+      document.getElementById("lightTheme");
+
+    const darkTheme =
+      document.getElementById("darkTheme");
+
+
+    function applyTheme(theme) {
+
+      if (theme === "dark") {
+
+        document.documentElement.classList.add(
+          "dark"
+        );
+
+        darkTheme.classList.add(
+          "bg-white/10"
+        );
+
+        lightTheme.classList.remove(
+          "bg-white"
+        );
+
+      } else {
+
+        document.documentElement.classList.remove(
+          "dark"
+        );
+
+        lightTheme.classList.add(
+          "bg-white"
+        );
+
+        darkTheme.classList.remove(
+          "bg-white/10"
+        );
+
+      }
+
+
+      localStorage.setItem(
+        "routeiq-theme",
+        theme
+      );
+
+    }
+
+
+    lightTheme.addEventListener(
+      "click",
+      () => applyTheme("light")
+    );
+
+
+    darkTheme.addEventListener(
+      "click",
+      () => applyTheme("dark")
+    );
+
+
+    const savedTheme =
+      localStorage.getItem(
+        "routeiq-theme"
+      );
+
+
+    applyTheme(
+      savedTheme || "light"
+    );
+
+
+    /* =========================================================
+       INITIAL LOAD
+    ========================================================== */
+
+    updateStats();
+
+    renderAlerts();
+
+  </script>
+
+  <script src="../app-sidebar.js"></script>
+</body>
+</html>
