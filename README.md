@@ -1,6 +1,3 @@
-# ROUTEIQ
-Intelligent Delivery Operations Platform
-
 # 🚚 RouteIQ — Intelligent Delivery Operations Platform
 
 RouteIQ is an intelligent delivery operations platform designed to help delivery teams monitor and manage orders, riders, restaurants, and operational performance through a centralized dashboard.
