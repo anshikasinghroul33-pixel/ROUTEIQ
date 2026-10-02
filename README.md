@@ -36,7 +36,6 @@ RouteIQ focuses on the internal operations side of a food-delivery ecosystem rat
 The current version focuses on the frontend operations dashboard and user interface. Backend services, database integration, authentication, real-time data, and ETA/delay prediction are planned for subsequent development phases.
 
 ## Planned Development
-
 - Node.js / Express backend
 - PostgreSQL database
 - REST APIs
